@@ -20,5 +20,5 @@ class CVDisplay(IDisplay):
     
     return True
   
-  def close(self) -> None:
+  def release(self) -> None:
     cv2.destroyAllWindows()
