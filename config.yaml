@@ -1,0 +1,63 @@
+analysis_settings:
+  # ------------------------------------------------------------
+  # DETECTION SETTINGS
+  # ------------------------------------------------------------
+
+  # File Path Parameters
+  yolo_path: "resources/detection_weights.pt" # Path to the YOLO model weights
+  video_path: "resources/test_video.mp4" # Video file path
+
+  # Video Input Parameters
+  use_webcam: false # Whether to use a webcam instead of a video file
+  webcam_index: 0 # Webcam index if use_webcam is true
+
+  # Inference Parameters
+  inference_interval: 0.25 # Seconds between inference updates
+  inference_frame_size: [1920, 1080] # Frame resolution for inference
+
+  # Detection & Grouping Parameters
+  overlap_threshold: 0.1 # For grouping cards into hands
+  inference_overlap_threshold: 0.9 # Overlap threshold for NMS and tracking
+  confidence_threshold: 0.9 # Minimum confidence required for detections CURRENTLY UNUSED -------------------
+
+  # Stability Tracking Parameters
+  confirmation_frames: 5 # Frames needed to confirm a detection
+  disappear_frames: 10 # Frames after which a card is dropped from tracking
+
+  ev_jar_path: "target/blackjack-ev-calculator-1.0.0.jar"
+  ev_class_path: "evaluation.EVCalculator"
+
+  # ------------------------------------------------------------
+  # ANNOTATION SETTINGS
+  # ------------------------------------------------------------
+
+  display_frame_size: [1280, 720] # Frame resolution for display
+  window_name: "blackjack_cv_analyzer"
+
+  player_color: [255, 255, 255]
+  dealer_color: [0, 255, 0]
+  default_color: [100, 100, 100]
+
+  font_scale: 1.2
+  thickness: 2
+
+  # ------------------------------------------------------------
+  # BLACKJACK LOGIC SETTINGS
+  # ------------------------------------------------------------
+
+  # Deck and Payout Settings
+  deck_size: 1 # Number of decks in play
+  blackjack_odds: 1.5 # Payout multiplier for natural blackjack
+
+  # Player Settings
+  can_surrender: true # Whether surrender is allowed CURRENTLY UNUSED -------------------
+
+  # Dealer Settings
+  dealer_hits_on_soft_17: true # If dealer hits on soft 17
+  dealer_peaks_for_21: true # If dealer peeks for blackjack
+
+  # Splitting and Doubling Settings
+  natural_blackjack_splits: false # If a split natural counts as blackjack
+  double_after_split: true # Whether doubling down is allowed after splitting
+  hit_split_aces: false # If hit is allowed after splitting aces
+  double_split_aces: false # If doubling after splitting aces is allowed
