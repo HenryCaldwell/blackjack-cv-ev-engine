@@ -17,7 +17,8 @@ class IAnnotator(ABC):
     Parameters:
       frame (Any): The image frame to annotate.
       raw_boxes (List[List[float]]): A list of bounding boxes representing detected card regions.
-      hand_dict (Dict[str, Any]): A dictionary containing information about each hand (cards, score, etc.).
+      hand_dict (Dict[str, Any]): A dictionary mapping hand identifiers to their hand details (e.g., cards,
+      score, boxes).
 
     Returns:
       Any: The annotated video frame.
