@@ -10,7 +10,7 @@ class IDisplay(ABC):
   """
 
   @abstractmethod
-  def update_and_show(self, frame: Any) -> None:
+  def update(self, frame: Any) -> None:
     """
     Update the display with the provided frame and render it.
 
