@@ -19,6 +19,7 @@ class IHandTracker(ABC):
       details.
 
     Returns:
-      Dict[str, Any]: A dictionary with hand identifiers as keys and details (cards, score, boxes) as values.
+      Dict[str, Any]: A dictionary mapping hand identifiers (as strings) to their hand details (e.g., cards,
+      score, boxes).
     """
     pass
