@@ -15,10 +15,11 @@ class ICardTracker(ABC):
     Update the tracked cards using new detections.
 
     Parameters:
-      detections (Dict[tuple, Dict[str, Any]]): A dictionary mapping bounding box coordinates
-      to their corresponding detection details.
+      detections (Dict[tuple, Dict[str, Any]]): A dictionary mapping bounding box coordinates to their
+      corresponding detection details.
 
     Returns:
-      Dict[tuple, Dict[str, Any]]: An updated dictionary of tracked cards after applying tracking logic.
+      Dict[tuple, Dict[str, Any]]: A dictionary mapping bounding box coordinates (as tuples) to their tracking
+      information (e.g., label, confidence, stable_frames, missing_frames, locked).
     """
     pass
