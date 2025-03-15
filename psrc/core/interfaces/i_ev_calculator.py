@@ -5,8 +5,8 @@ class IEVCalculator(ABC):
   """
   Interface for calculating expected values (EV) for blackjack actions.
 
-  This interface defines a method for computing the EV of various actions (e.g., hit, stand, double, split) based
-  on the current deck composition and the hands of the player and dealer.
+  This interface defines a method for computing the EV of various actions (e.g., hit, stand, double, split)
+  based on the current deck composition and the hands of the player and dealer.
   """
 
   @abstractmethod
