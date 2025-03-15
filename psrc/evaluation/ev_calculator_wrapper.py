@@ -3,7 +3,7 @@ import jpype
 import jpype.imports
 
 from psrc.core.interfaces.i_ev_calculator import IEVCalculator
-from psrc.evaluation.conversion_utils import deck_to_java_array, hand_to_java_array_list
+from psrc.evaluation.java_conversion_utils import deck_to_java_array, hand_to_java_array_list
 
 class EVCalculatorWrapper(IEVCalculator):
   """
