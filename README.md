@@ -99,38 +99,39 @@ python main.py
 
 ```
 .
-├── config.yaml # Contains the main configuration settings for detection, display, and blackjack rules
-├── main.py # The main entry point for the application
-├── pom.xml # Maven configuration for building the Java EV calculator
-├── requirements.txt # Lists the required Python dependencies
+├── config.yaml                     # Contains the main configuration settings for detection, display, and blackjack rules
+├── main.py                         # The main entry point for the application
+├── pom.xml                         # Maven configuration for building the Java EV calculator
+├── README.md                       # Contains project documentation and guidelines
+├── requirements.txt                # Lists the required Python dependencies
 ├── jsrc
 │  └── evaluation
-│     ├── ConfigManager.java # Loads game settings from config.yaml using SnakeYAML
-│     ├── EVCalculator.java # Implements recursive expected value (EV) calculations for blackjack actions
-│     └── StateKey.java # Generates unique keys for memoization in EV calculations
+│     ├── ConfigManager.java        # Loads game settings from config.yaml using SnakeYAML
+│     ├── EVCalculator.java         # Implements recursive expected value (EV) calculations for blackjack actions
+│     └── StateKey.java             # Generates unique keys for memoization in EV calculations
 ├── psrc
 │  ├── annotation
-│  │  └── cv_annotator.py #  Annotates video frames with detected card and hand details using OpenCV
+│  │  └── cv_annotator.py           # Annotates video frames with detected card and hand details using OpenCV
 │  ├── config
-│  │  └── config_manager.py # Loads and parses the YAML configuration for the Python modules
+│  │  └── config_manager.py         # Loads and parses the YAML configuration for the Python modules
 │  ├── core
-│  │  ├── analysis_engine.py # Orchestrates the complete video processing pipeline including detection, tracking, EV calculation, and display
-│  │  └── interfaces # Contains abstract interfaces defining contracts for various modules (e.g., detector, tracker, display)
+│  │  ├── analysis_engine.py        # Orchestrates the complete video processing pipeline including detection, tracking, EV calculation, and display
+│  │  └── interfaces                # Contains abstract interfaces defining contracts for various modules (e.g., detector, tracker, display)
 │  ├── debugging
-│  │  └── logger.py # Configures and initializes the custom logger
+│  │  └── logger.py                 # Configures and initializes the custom logger
 │  ├── detection
-│  │  ├── card_detector.py # Detects cards in video frames using a YOLO-based model
-│  │  ├── card_tracker.py # Tracks card detections across frames to maintain continuity
-│  │  ├── hand_tracker.py # Groups detected cards into dealer and player hands and computes their scores
-│  │  └── detection_utils.py # Contains utility functions for computing bounding box overlaps and grouping
+│  │  ├── card_detector.py          # Detects cards in video frames using a YOLO-based model
+│  │  ├── card_tracker.py           # Tracks card detections across frames to maintain continuity
+│  │  ├── hand_tracker.py           # Groups detected cards into dealer and player hands and computes their scores
+│  │  └── detection_utils.py        # Contains utility functions for computing bounding box overlaps and grouping
 │  ├── evaluation
-│  │  ├── card_deck.py # Manages the blackjack card deck by adding or removing cards
-│  │  ├── ev_calculator_wrapper.py # Provides a Python wrapper for the Java EV calculator using JPype
-│  │  └── java_conversion_utils.py # Converts Python data structures to Java-compatible types for EV calculations
+│  │  ├── card_deck.py              # Manages the blackjack card deck by adding or removing cards
+│  │  ├── ev_calculator_wrapper.py  # Provides a Python wrapper for the Java EV calculator using JPype
+│  │  └── java_conversion_utils.py  # Converts Python data structures to Java-compatible types for EV calculations
 │  ├── ui
-│  │  └── cv_display.py # Displays video frames and manages user input using OpenCV
+│  │  └── cv_display.py             # Displays video frames and manages user input using OpenCV
 │  └── video
-│     └── cv_video_stream.py # Captures video frames from a file or webcam using OpenCV
+│     └── cv_video_stream.py        # Captures video frames from a file or webcam using OpenCV
 ```
 
 ## Future Improvements
