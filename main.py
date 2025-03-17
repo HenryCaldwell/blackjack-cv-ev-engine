@@ -1,4 +1,4 @@
-from psrc.annotation.annotator import Annotator
+from psrc.annotation.cv_annotator import CVAnnotator
 from psrc.config.config_manager import ConfigManager
 from psrc.core.analysis_engine import AnalysisEngine
 from psrc.detection.card_detector import CardDetector
@@ -7,18 +7,32 @@ from psrc.detection.hand_tracker import HandTracker
 from psrc.evaluation.card_deck import CardDeck
 from psrc.evaluation.ev_calculator_wrapper import EVCalculatorWrapper
 from psrc.ui.cv_display import CVDisplay
-from psrc.video.video_stream import VideoStreamReader
+from psrc.video.cv_video_stream import CVVideoStream
 
 def main():
+  """
+  Main entry point for the blackjack vision application.
+
+  This function is used to load configuration settings to be passed in to the analysis engine. It initializes
+  all required componenets (detector, tracker, deck, EV calculator, hand tracker, annotator, display) and passes
+  them to the analysis engine.
+  """
+  # Load configuration from config.yaml
   settings = ConfigManager()
   
+  # Determine the video source based on user preference (webcam or file)
   if settings.use_webcam:
-    video_reader = VideoStreamReader(settings.webcam_index)
+    video_reader = CVVideoStream(settings.webcam_index)
   else:
-    video_reader = VideoStreamReader(settings.video_path)
+    video_reader = CVVideoStream(settings.video_path)
   
+  # Initialize the card detector with the YOLO model path
   card_detector = CardDetector(settings.yolo_path)
   
+  # Initialize a deck with the specified size
+  deck = CardDeck(settings.deck_size)
+  
+  # Initialize the card tracker, which removes a card from the deck once it becomes locked
   card_tracker = CardTracker(
     confirmation_frames=settings.confirmation_frames,
     disappear_frames=settings.disappear_frames,
@@ -27,16 +41,17 @@ def main():
     on_lock_callback=lambda card_label: deck.remove_card(card_label)
   )
   
-  deck = CardDeck(settings.deck_size)
-  
+  # Initialize the EV calculator with the jar and class paths
   ev_calculator = EVCalculatorWrapper(
     jar_path=settings.ev_jar_path,
     java_class=settings.ev_class_path
   )
   
+  # Initialize the hand tracker 
   hand_tracker = HandTracker()
   
-  annotator = Annotator(
+  # Initialize the annotator with the annotation settings
+  annotator = CVAnnotator(
     player_color=settings.player_color,
     dealer_color=settings.dealer_color,
     default_color=settings.default_color,
@@ -44,8 +59,10 @@ def main():
     thickness=settings.thickness
   )
   
+  # Initialize the display with the window name
   vision_display = CVDisplay(window_name=settings.window_name)
   
+  # Load the analysis engine that ties the components together
   engine = AnalysisEngine(
     video_reader=video_reader,
     card_detector=card_detector,
@@ -60,6 +77,7 @@ def main():
     display_frame_size=tuple(settings.display_frame_size)
   )
   
+  # Start the main analysis loop
   engine.run()
 
 if __name__ == "__main__":
