@@ -1,0 +1,5 @@
+opencv-python>=4.5.1.48
+PyYAML>=5.3.1
+JPype1>=1.2.1
+ultralytics>=0.0.36
+numpy>=1.19.2
