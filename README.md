@@ -33,10 +33,12 @@ The Blackjack Computer Vision Evaluation Engine is a modular application that in
 - **Java JDK 11+**
 - **Maven**
 - **Required Python Packages:**
-  - OpenCV (`opencv-python`)
-  - PyYAML
-  - JPype1
-  - ultralytics (for the YOLO model)
+  - JPype (jpype1)
+  - NumPy (numpy)
+  - OpenCV (opencv-python)
+  - PyYAML (pyyaml)
+  - SciPy (scipy)
+  - Ultralytics YOLO (ultralytics)
 
 ### Setup Steps
 
@@ -122,8 +124,7 @@ python main.py
 │  ├── detection
 │  │  ├── card_detector.py          # Detects cards in video frames using a YOLO-based model
 │  │  ├── card_tracker.py           # Tracks card detections across frames to maintain continuity
-│  │  ├── hand_tracker.py           # Groups detected cards into dealer and player hands and computes their scores
-│  │  └── detection_utils.py        # Contains utility functions for computing bounding box overlaps and grouping
+│  │  └── hand_tracker.py           # Groups detected cards into dealer and player hands and computes their scores
 │  ├── evaluation
 │  │  ├── card_deck.py              # Manages the blackjack card deck by adding or removing cards
 │  │  ├── ev_calculator_wrapper.py  # Provides a Python wrapper for the Java EV calculator using JPype
