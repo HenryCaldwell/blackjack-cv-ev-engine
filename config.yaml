@@ -19,7 +19,7 @@ analysis_settings:
 
   # Detection & Grouping Parameters
   overlap_threshold: 0.1 # For grouping cards into hands
-  iou_threshold: 0.25 # Intersection over union threshold for tracking
+  iou_threshold: 0.25 # For card tracking hungarian
   confidence_threshold: 0.9 # Minimum confidence required for tarcking --- CURRENTLY UNUSED ---
 
   # Stability Tracking Parameters
