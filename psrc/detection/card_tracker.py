@@ -76,8 +76,8 @@ class CardTracker(ICardTracker):
   """
   CardTracker implements the ICardTracker interface for tracking card detections across video frames.
 
-  It uses data association via the Hungarian algorithm to match new detections with existing tracks based on
-  Intersection over Union (IoU). Tracks are updated based on hits and misses, and are confirmed after a
+  This class uses data association via the Hungarian algorithm to match new detections with existing tracks
+  based on Intersection over Union (IoU). Tracks are updated based on hits and misses, and are confirmed after a
   specified number of consecutive hits.
   """
 
