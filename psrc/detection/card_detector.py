@@ -14,16 +14,14 @@ class CardDetector(ICardDetector):
   overlapping detections based on a specified overlap threshold.
   """
   
-  def __init__(self, model_path: str, overlap_threshold: float = 0.9) -> None:
+  def __init__(self, model_path: str) -> None:
     """
     Initialize the CardDetector with a YOLO model and an overlap threshold.
     
     Parameters:
       model_path (str): Path to the YOLO model file.
-      overlap_threshold (float): Overlap threshold for non-maximal suppression.
     """
     self.model = YOLO(model_path)
-    self.overlap_threshold = overlap_threshold
 
   def detect(self, frame: Any) -> Dict[tuple, Dict[str, Any]]:
     """
