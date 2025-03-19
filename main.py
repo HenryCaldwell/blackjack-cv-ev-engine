@@ -22,22 +22,22 @@ def main():
   
   # Determine the video source based on user preference (webcam or file)
   if settings.use_webcam:
-    video_reader = CVVideoStream(settings.webcam_index)
+    video_reader = CVVideoStream(source=settings.webcam_index)
   else:
-    video_reader = CVVideoStream(settings.video_path)
+    video_reader = CVVideoStream(source=settings.video_path)
   
   # Initialize the card detector with the YOLO model path
-  card_detector = CardDetector(settings.yolo_path)
+  card_detector = CardDetector(model_path=settings.yolo_path)
   
   # Initialize a deck with the specified size
-  deck = CardDeck(settings.deck_size)
+  deck = CardDeck(deck_count=settings.deck_count)
   
   # Initialize the card tracker, which removes a card from the deck once it becomes locked
   card_tracker = CardTracker(
     confidence_threshold=settings.confidence_threshold,
-    iou_threshold=settings.inference_overlap_threshold,
-    miss_frames=settings.disappear_frames,
+    iou_threshold=settings.iou_threshold,
     confirmation_frames=settings.confirmation_frames,
+    miss_frames=settings.removal_frames,
     on_confirm_callback=lambda track: deck.remove_card(track.label)
   )
   

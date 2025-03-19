@@ -57,6 +57,10 @@ class ConfigManager:
     self.yolo_path = settings["yolo_path"]
     self.video_path = settings["video_path"]
 
+    # Set expected value calculator JAR and class paths
+    self.ev_jar_path = settings["ev_jar_path"]
+    self.ev_class_path = settings["ev_class_path"]
+
     # Set webcam usage and index
     self.use_webcam = settings["use_webcam"]
     self.webcam_index = settings["webcam_index"]
@@ -67,16 +71,12 @@ class ConfigManager:
 
     # Set thresholds for inference
     self.overlap_threshold = settings["overlap_threshold"]
-    self.inference_overlap_threshold = settings["inference_overlap_threshold"]
+    self.iou_threshold = settings["iou_threshold"]
     self.confidence_threshold = settings["confidence_threshold"]
 
     # Set frame count parameters for detection
     self.confirmation_frames = settings["confirmation_frames"]
-    self.disappear_frames = settings["disappear_frames"]
-
-    # Set expected value calculator JAR and class paths
-    self.ev_jar_path = settings["ev_jar_path"]
-    self.ev_class_path = settings["ev_class_path"]
+    self.removal_frames = settings["removal_frames"]
 
     # Set display parameters
     self.display_frame_size = tuple(settings["display_frame_size"])
@@ -89,5 +89,5 @@ class ConfigManager:
     self.font_scale = settings["font_scale"]
     self.thickness = settings["thickness"]
 
-    # Set the deck size parameter
-    self.deck_size = settings["deck_size"]
+    # Set the deck count parameter
+    self.deck_count = settings["deck_count"]

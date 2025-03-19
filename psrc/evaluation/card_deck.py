@@ -7,26 +7,26 @@ class CardDeck(ICardDeck):
   CardDeck implements the ICardDeck interface for managing a blackjack card deck.
   
   This class provides methods for adding and removing cards from the deck, updating the deck's state to reflect
-  gameplay changes. The deck is initialized with a specified size, where the count of each card is scaled based
-  on the number of decks.
+  gameplay changes. The deck is initialized with a specified deck_count, where the count of each card is scaled
+  based on the number of decks.
   """
   
-  def __init__(self, size: int) -> None:
+  def __init__(self, deck_count: int) -> None:
     """
-    Initialize the CardDeck with a given size.
+    Initialize the CardDeck with a given deck count.
     
     Parameters:
-      size (int): The number of decks to be combined.
+      deck_count (int): The number of decks to be combined.
       
     The deck is initialized with:
-      - 4 * size copies of cards labeled 0 through 8.
-      - 16 * size copies for card label 9 (face cards are normalized to label 9).
+      - 4 * deck_count copies of cards labeled 0 through 8.
+      - 16 * deck_count copies for card label 9 (face cards are normalized to label 9).
     """
-    self.size = size
-    # Initialize counts for cards 0 through 8 (each has 4 * size copies)
-    self.cards: Dict[int, int] = {i: 4 * size for i in range(0, 9)}
-    # Initialize counts for face cards (normalized to label 9, each has 16 * size copies)
-    self.cards[9] = 16 * size
+    self.deck_count = deck_count
+    # Initialize counts for cards 0 through 8 (each has 4 * deck_count copies)
+    self.cards: Dict[int, int] = {i: 4 * deck_count for i in range(0, 9)}
+    # Initialize counts for face cards (normalized to label 9, each has 16 * deck_count copies)
+    self.cards[9] = 16 * deck_count
 
   """
   Add a card to the deck.

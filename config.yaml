@@ -6,51 +6,50 @@ analysis_settings:
   # File Path Parameters
   yolo_path: "resources/detection_weights.pt" # Path to the YOLO model weights
   video_path: "resources/test_video.mp4" # Video file path
+  ev_jar_path: "target/blackjack-ev-calculator-1.0.0.jar" # Path to the Java Archive (JAR) for the EV calculator
+  ev_class_path: "evaluation.EVCalculator" # Fully qualified Java class name for the EV calculator
 
   # Video Input Parameters
   use_webcam: false # Whether to use a webcam instead of a video file
   webcam_index: 0 # Webcam index if use_webcam is true
 
   # Inference Parameters
-  inference_interval: 0.25 # Seconds between inference updates
+  inference_interval: 0.1 # Seconds between inference updates
   inference_frame_size: [1920, 1080] # Frame resolution for inference
 
   # Detection & Grouping Parameters
   overlap_threshold: 0.1 # For grouping cards into hands
-  inference_overlap_threshold: 0.9 # Overlap threshold for NMS and tracking
-  confidence_threshold: 0.9 # Minimum confidence required for detections CURRENTLY UNUSED -------------------
+  iou_threshold: 0.25 # Intersection over union threshold for tracking
+  confidence_threshold: 0.9 # Minimum confidence required for tarcking --- CURRENTLY UNUSED ---
 
   # Stability Tracking Parameters
   confirmation_frames: 5 # Frames needed to confirm a detection
-  disappear_frames: 10 # Frames after which a card is dropped from tracking
-
-  ev_jar_path: "target/blackjack-ev-calculator-1.0.0.jar"
-  ev_class_path: "evaluation.EVCalculator"
+  removal_frames: 10 # Frames after which a card is dropped from tracking
 
   # ------------------------------------------------------------
   # ANNOTATION SETTINGS
   # ------------------------------------------------------------
 
   display_frame_size: [1280, 720] # Frame resolution for display
-  window_name: "blackjack_cv_analyzer"
+  window_name: "blackjack_cv_analyzer" # Name of the display window
 
-  player_color: [255, 255, 255]
-  dealer_color: [0, 255, 0]
-  default_color: [100, 100, 100]
+  player_color: [255, 255, 255] # Color for annotating player hands (in BGR)
+  dealer_color: [0, 255, 0] # Color for annotating the dealer's hand (in BGR)
+  default_color: [100, 100, 100] # Default annotation color for non-specific elements (in BGR)
 
-  font_scale: 1.2
-  thickness: 2
+  font_scale: 1.2 # Scale factor for annotation text
+  thickness: 2 # Thickness for drawing rectangles and text
 
   # ------------------------------------------------------------
   # BLACKJACK LOGIC SETTINGS
   # ------------------------------------------------------------
 
   # Deck and Payout Settings
-  deck_size: 1 # Number of decks in play
+  deck_count: 1 # Number of decks in play
   blackjack_odds: 1.5 # Payout multiplier for natural blackjack
 
   # Player Settings
-  can_surrender: true # Whether surrender is allowed CURRENTLY UNUSED -------------------
+  can_surrender: true # Whether surrender is allowed --- CURRENTLY UNUSED ---
 
   # Dealer Settings
   dealer_hits_on_soft_17: true # If dealer hits on soft 17

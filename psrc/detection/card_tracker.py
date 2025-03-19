@@ -93,16 +93,16 @@ class CardTracker(ICardTracker):
     Parameters:
       confidence_threshold (float): Minimum confidence required to consider a detection valid.
       iou_threshold (float): Minimum IoU required for matching a detection with an existing track.
-      miss_frames (int): Maximum allowed consecutive missed detections before deleting a track.
       confirmation_frames (int): Minimum number of consecutive hits required to confirm a track.
+      miss_frames (int): Maximum allowed consecutive missed detections before deleting a track.
       on_confirm_callback (Optional[Callable[[Track], None]]): Function to call when a track is confirmed.
     """
     self.tracks = {}  # Dictionary to store active tracks with track_id as keys
     self.next_track_id = 0
     self.confidence_threshold = confidence_threshold
     self.iou_threshold = iou_threshold
-    self.miss_frames = miss_frames
     self.confirmation_frames = confirmation_frames
+    self.miss_frames = miss_frames
     self.on_confirm_callback = on_confirm_callback
 
   def _compute_iou(self, boxes1: np.ndarray, boxes2: np.ndarray) -> np.ndarray:
