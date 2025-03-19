@@ -10,8 +10,7 @@ class CardDetector(ICardDetector):
   """
   CardDetector implements the ICardDetector interface for detecting cards in video frames.
   
-  It leverages a YOLO model to perform object detection and applies non-maximal suppression (NMS) to eliminate
-  overlapping detections based on a specified overlap threshold.
+  This class leverages a YOLO model to perform object detection and returns detection results.
   """
   
   def __init__(self, model_path: str) -> None:
