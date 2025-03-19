@@ -10,7 +10,7 @@ class ICardTracker(ABC):
   """
 
   @abstractmethod
-  def update(self, detections: Dict[tuple, Dict[str, Any]]) -> Dict[tuple, Dict[str, Any]]:
+  def update(self, detections: Dict[tuple, Dict[str, Any]]) -> Dict[int, Dict[str, Any]]:
     """
     Update the tracked cards using new detections.
 
@@ -19,7 +19,7 @@ class ICardTracker(ABC):
       corresponding detection details.
 
     Returns:
-      Dict[tuple, Dict[str, Any]]: A dictionary mapping bounding box coordinates (as tuples) to their tracking
-      information (e.g., label, confidence, stable_frames, missing_frames, locked).
+      Dict[tuple, Dict[str, Any]]: A dictionary mapping track IDs to their tracking information (e.g., bounding
+      box, label, state).
     """
     pass

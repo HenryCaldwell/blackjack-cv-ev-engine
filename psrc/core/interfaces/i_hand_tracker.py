@@ -10,13 +10,12 @@ class IHandTracker(ABC):
   """
 
   @abstractmethod
-  def update(self, detections: Dict[tuple, Dict[str, Any]]) -> Dict[str, Any]:
+  def update(self, detections: Dict[int, Dict[str, Any]]) -> Dict[str, Any]:
     """
     Update the hand tracker with new card detections and group them into hands.
 
     Parameters:
-      detections (Dict[tuple, Dict[str, Any]]): A dictionary mapping bounding box coordinates to detection
-      details.
+      detections (Dict[int, Dict[str, Any]]): A dictionary mapping track IDs to detection details.
 
     Returns:
       Dict[str, Any]: A dictionary mapping hand identifiers (as strings) to their hand details (e.g., cards,
