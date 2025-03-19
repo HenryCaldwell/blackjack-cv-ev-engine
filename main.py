@@ -34,11 +34,11 @@ def main():
   
   # Initialize the card tracker, which removes a card from the deck once it becomes locked
   card_tracker = CardTracker(
-    confirmation_frames=settings.confirmation_frames,
-    disappear_frames=settings.disappear_frames,
     confidence_threshold=settings.confidence_threshold,
-    overlap_threshold=settings.inference_overlap_threshold,
-    on_lock_callback=lambda card_label: deck.remove_card(card_label)
+    iou_threshold=settings.inference_overlap_threshold,
+    miss_frames=settings.disappear_frames,
+    confirmation_frames=settings.confirmation_frames,
+    on_confirm_callback=lambda track: deck.remove_card(track.label)
   )
   
   # Initialize the EV calculator with the jar and class paths

@@ -1,35 +1,38 @@
-from typing import Any, Dict, List
+import numpy as np
+
+from typing import Any, Dict, List, Tuple
 
 from psrc.core.interfaces.i_hand_tracker import IHandTracker
-from psrc.detection.detection_utils import group_cards
 
 class HandTracker(IHandTracker):
   """
-  HandTracker implements the IHandTracker interface for tracking and grouping cards into blackjack hands.
+  HandTracker implements the IHandTracker interface for tracking and grouping card tracks into blackjack hands.
 
-  This class groups card detections into hands and calculates the corresponding hand scores using a predefined
-  evaluation algorithm. Dealer hands are assumed to consist of single detections, while player hands consist of 
-  grouped detections.
+  This class groups card tracks into hands using an overlap-based grouping algorithm and evaluates the hand
+  scores using a predefined evaluation method. Hands with a single card are assumed to belong to the dealer,
+  while hands with multiple cards are assumed to belong to players.
   """
-  
-  def __init__(self) -> None:
+
+  def __init__(self, overlap_threshold: float = 0.1) -> None:
     """
-    Initialize the HandTracker with an empty state for hands.
+    Initialize the HandTracker with an empty state and set the overlap threshold.
+
+    Parameters:
+      overlap_threshold (float): Minimum required overlap between bounding boxes to consider them part of the
+      same group.
     """
-    # Dictionary to store currently tracked hands; key is player/dealer hand, value is hand information
-    self.hands_state: Dict[str, Any] = {}
+    self.hands_state = {}  # Dictionary to store current hands with hand index and dealer as keys
+    self.overlap_threshold = overlap_threshold
 
   def _evaluate_hand(self, cards: List[int]) -> int:
     """
     Evaluate the total score of a hand based on card values.
 
-    Cards are evaluated using the following rules:
-      - Ace (represented by 0) is initially counted as 1, with an option to add 10 if it doesn't bust.
-      - Cards 1 through 8 are valued at card value + 1.
-      - Cards 9 and above are counted as 10.
+    Ace (represented by 0) is initially counted as 1, with an option to add 10 if it does not bust the hand.
+    Cards with values 1 through 8 are valued at card value + 1. Cards with value 9 and above are counted as 10.
 
     Parameters:
-      cards (List[int]): A list of card labels (integer values).
+      cards (List[int]): A list of card labels.
 
     Returns:
       int: The calculated score of the hand.
@@ -37,77 +40,169 @@ class HandTracker(IHandTracker):
     total = 0
     aces = 0
 
+    # Iterate through each card in the hand and update total and ace count accordingly
     for card in cards:
       if card == 0:
         total += 1
-        # Count Ace as 1 initially
         aces += 1
-      # Cards 1-8 have values card + 1
       elif 1 <= card <= 8:
         total += card + 1
-      # Cards 9 and above count as 10
       else:
         total += 10
 
-    # Adjust Ace value if 10 does not bust the hand
+    # If possible, adjust Aces by adding 10 without busting
     while aces > 0 and total + 10 <= 21:
       total += 10
       aces -= 1
 
     return int(total)
 
-  def update(self, detections: Dict[tuple, Dict[str, Any]]) -> Dict[str, Any]:
+  def _compute_overlap_matrix(self, boxes: np.ndarray) -> np.ndarray:
     """
-    Update the hand tracker with new card detections and group them into hands.
+    Compute the overlap matrix for a set of bounding boxes.
 
-    This method processes the locked detections, groups them using an overlap-based grouping algorithm, and
-    evaluates the scores for dealer and player hands. Dealer hands are assumed to be those with a single
-    detection, while player hands consist of multiple grouped detections.
+    The overlap for a pair of boxes is computed as the ratio of the area of their intersection to the area of
+    the smaller box. This results in a symmetric matrix where each element (i, j) indicates the overlap between
+    boxes i and j.
 
     Parameters:
-      detections (Dict[tuple, Dict[str, Any]]): A dictionary mapping bounding box coordinates to detection
-      details.
+      boxes (np.ndarray): An array of bounding boxes of shape (N, 4), where each box is represented by [x_min,
+      y_min, x_max, y_max].
 
     Returns:
-      Dict[str, Any]: A dictionary mapping hand identifiers (as strings) to their hand details (e.g., cards,
-      score, boxes).
+      np.ndarray: A (N, N) matrix where each element represents the overlap ratio between two boxes.
     """
-    # Filter detections to include only those that are locked
-    locked_detections: Dict[tuple, Dict[str, Any]] = {
-      bbox: data for bbox, data in detections.items() if data.get("locked", False)
-    }
+    # Extract the coordinates for each bounding box
+    x_min = boxes[:, 0]
+    y_min = boxes[:, 1]
+    x_max = boxes[:, 2]
+    y_max = boxes[:, 3]
+    
+    # For each pair, determine the coordinates of the intersection rectangle
+    x_left   = np.maximum(x_min[:, None], x_min[None, :])
+    y_top    = np.maximum(y_min[:, None], y_min[None, :])
+    x_right  = np.minimum(x_max[:, None], x_max[None, :])
+    y_bottom = np.minimum(y_max[:, None], y_max[None, :])
+    
+    # Compute intersection dimensions, ensuring no negative values
+    inter_width  = np.maximum(0, x_right - x_left)
+    inter_height = np.maximum(0, y_bottom - y_top)
+    inter_area   = inter_width * inter_height
+    
+    area = (x_max - x_min) * (y_max - y_min)  # Calculate area for each bounding box
+    min_area = np.minimum(area[:, None], area[None, :])  # For each pair, use the smaller area for the overlap ratio
+    
+    overlap = inter_area / (min_area + 1e-6)  # Calculate the overlap ratio for each pair (with epsilon to avoid division by zero)
 
-    boxes: List[tuple] = list(locked_detections.keys())
-    groups = group_cards([list(b) for b in boxes])
+    return overlap
+
+  def _group_cards(self, boxes: List[Tuple[float, float, float, float]]) -> List[List[int]]:
+    """
+    Group cards based on the overlap of their bounding boxes using a union-find algorithm.
+
+    The method computes an overlap matrix and considers two boxes as connected if their overlap exceeds the
+    defined threshold. It then uses a union-find (disjoint set) data structure to cluster connected boxes
+    together.
+
+    Parameters:
+      boxes (List[Tuple[float, float, float, float]]): List of bounding boxes for the detected cards.
+
+    Returns:
+      List[List[int]]: A list of groups, where each group is a list of indices corresponding to boxes that
+      belong to the same hand.
+    """
+    n = len(boxes)
+    
+    # Return empty list if no boxes provided
+    if n == 0:
+      return []
+
+    boxes_np = np.array(boxes).reshape(-1, 4)  # Convert list of boxes to a NumPy array for efficient computation
+    overlap_matrix = self._compute_overlap_matrix(boxes_np)  # Compute the pairwise overlap matrix between bounding boxes
+    
+    # Create an adjacency matrix where it is True if overlap is above the threshold
+    adj = overlap_matrix >= self.overlap_threshold
+    np.fill_diagonal(adj, False)
+    
+    parent = list(range(n))
+    
+    # Find the representative of the set containing x using path compression
+    def _find(x: int) -> int:
+      while parent[x] != x:
+        parent[x] = parent[parent[x]]
+        x = parent[x]
+      return x
+    
+    # Merge the sets containing x and y
+    def _union(x: int, y: int) -> None:
+      root_x = _find(x)
+      root_y = _find(y)
+
+      if root_x != root_y:
+        parent[root_y] = root_x
+    
+    # Iterate over all pairs of boxes and union their sets if they are adjacent
+    for i in range(n):
+      for j in range(i + 1, n):
+        if adj[i, j]:
+          _union(i, j)
+    
+    # Group boxes based on their representative parent
+    groups_dict: Dict[int, List[int]] = {}
+
+    for i in range(n):
+      root = _find(i)
+      
+      if root not in groups_dict:
+        groups_dict[root] = []
+
+      groups_dict[root].append(i)
+    
+    return list(groups_dict.values())
+
+  def update(self, tracks: Dict[int, Dict[str, Any]]) -> Dict[str, Any]:
+    """
+    Update the hand tracker with new card tracks and group them into hands.
+
+    This method takes in a dictionary of card tracks, groups the associated bounding boxes into hands using an
+    overlap-based grouping algorithm, and evaluates the score for each hand. A single-card group is assumed to
+    be the dealer's hand, while groups with multiple cards are considered player hands.
+
+    Parameters:
+      tracks (Dict[int, Dict[str, Any]]): Dictionary of card tracks, where each track contains detection info
+      such as 'bbox' and 'label'.
+
+    Returns:
+      Dict[str, Any]: A dictionary mapping hand identifiers to their hand details (e.g., cards, score, boxes).
+    """
+    boxes = [tuple(info["bbox"]) for info in tracks.values()]
+    labels = [info["label"] for info in tracks.values()]
+    
+    # Group the bounding boxes based on their overlap
+    groups = self._group_cards(boxes)
     hands_info: Dict[str, Any] = {}
-
-    # Identify groups with a single detection (assumed to be the dealer's hand)
+    
+    # Identify groups that consist of a single card
     single_groups = [group for group in groups if len(group) == 1]
     dealer_indices = [idx for group in single_groups for idx in group]
-    
+
+    # Extract dealer card labels and boxes from the indices
     if dealer_indices:
-      dealer_cards = [
-        locked_detections[boxes[idx]]["label"] 
-        for idx in dealer_indices if boxes[idx] in locked_detections
-      ]
+      dealer_cards = [labels[idx] for idx in dealer_indices]
       dealer_score = self._evaluate_hand(dealer_cards)
       dealer_boxes = [boxes[idx] for idx in dealer_indices]
       hands_info["Dealer"] = {"cards": dealer_cards, "score": dealer_score, "boxes": dealer_boxes}
-
-    # Identify groups with more than one detection (assumed to be player hands)
+    
+    # Identify groups with multiple cards
     player_groups = [group for group in groups if len(group) > 1]
-    # Sort player groups by the x-coordinate of the leftmost box for consistent ordering
     player_groups.sort(key=lambda group: min(boxes[idx][0] for idx in group) if group else 0)
 
+    # Process each player group and compute the hand information
     for i, group in enumerate(player_groups, start=1):
-      cards = [
-          locked_detections[boxes[idx]]["label"] 
-          for idx in group if boxes[idx] in locked_detections
-      ]
-      score = self._evaluate_hand(cards)
+      player_cards = [labels[idx] for idx in group]
+      score = self._evaluate_hand(player_cards)
       hand_boxes = [boxes[idx] for idx in group]
-      hands_info[f"Player {i}"] = {"cards": cards, "score": score, "boxes": hand_boxes}
-
-    # Update the hands state with the new tracking state
+      hands_info[f"Player {i}"] = {"cards": player_cards, "score": score, "boxes": hand_boxes}
+    
     self.hands_state = hands_info
     return hands_info
