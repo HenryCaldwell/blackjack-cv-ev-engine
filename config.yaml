@@ -23,8 +23,8 @@ analysis_settings:
   confidence_threshold: 0.9 # Minimum confidence required for tarcking --- CURRENTLY UNUSED ---
 
   # Stability Tracking Parameters
-  confirmation_frames: 5 # Frames needed to confirm a detection
-  removal_frames: 10 # Frames after which a card is dropped from tracking
+  confirmation_frames: 10 # Frames needed to confirm a detection
+  removal_frames: 20 # Frames after which a card is dropped from tracking
 
   # ------------------------------------------------------------
   # ANNOTATION SETTINGS
@@ -33,9 +33,8 @@ analysis_settings:
   display_frame_size: [1280, 720] # Frame resolution for display
   window_name: "blackjack_cv_analyzer" # Name of the display window
 
-  player_color: [255, 255, 255] # Color for annotating player hands (in BGR)
-  dealer_color: [0, 255, 0] # Color for annotating the dealer's hand (in BGR)
-  default_color: [100, 100, 100] # Default annotation color for non-specific elements (in BGR)
+  confirmed_color: [0, 255, 0] # Color for annotating confirmed cards (in BGR)
+  tentative_color: [0, 0, 255] # Color for annotating tentative cards (in BGR)
 
   font_scale: 1.2 # Scale factor for annotation text
   thickness: 2 # Thickness for drawing rectangles and text

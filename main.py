@@ -52,9 +52,8 @@ def main():
   
   # Initialize the annotator with the annotation settings
   annotator = CVAnnotator(
-    player_color=settings.player_color,
-    dealer_color=settings.dealer_color,
-    default_color=settings.default_color,
+    confirmed_color=settings.confirmed_color,
+    tentative_color=settings.tentative_color,
     font_scale=settings.font_scale,
     thickness=settings.thickness
   )

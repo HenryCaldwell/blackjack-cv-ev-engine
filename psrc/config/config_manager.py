@@ -83,9 +83,8 @@ class ConfigManager:
     self.window_name = settings["window_name"]
 
     # Set text settings
-    self.player_color = tuple(settings["player_color"])
-    self.dealer_color = tuple(settings["dealer_color"])
-    self.default_color = tuple(settings["default_color"])
+    self.confirmed_color = tuple(settings["confirmed_color"])
+    self.tentative_color = tuple(settings["tentative_color"])
     self.font_scale = settings["font_scale"]
     self.thickness = settings["thickness"]
 

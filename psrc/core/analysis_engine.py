@@ -159,7 +159,7 @@ class AnalysisEngine:
             formatted_evs = {action: f"{(value * 100):.2f}%" for action, value in data["evs"].items()}
             logger.info("%s: EVs: %s | Best: %s", hand, formatted_evs, data["best_action"].upper())
 
-          annotated_frame = self.annotator.annotate(inference_frame.copy(), raw_detections.keys(), hands_info)
+          annotated_frame = self.annotator.annotate(inference_frame.copy(), raw_detections.keys(), tracked_detections)
           self.last_update = current_time
 
         display_frame = cv2.resize(annotated_frame, self.display_frame_size)
