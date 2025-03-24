@@ -14,7 +14,7 @@ public class EVCalculator {
   private Map<StateKey, Double> cache;
 
   /**
-   * Constructs an EVEngine instance and initializes the cache.
+   * Constructs an EVCalculator instance and initializes the cache.
    */
   public EVCalculator() {
     this.cache = new HashMap<>();

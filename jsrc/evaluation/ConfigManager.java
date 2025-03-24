@@ -7,6 +7,12 @@ import java.util.Map;
 
 import org.yaml.snakeyaml.Yaml;
 
+/**
+ * Represents a configuration manager for the blackjack evaluation engine. The
+ * settings include odds, dealer behavior, and options for splitting, doubling,
+ * and surrendering. If the configuration file cannot be loaded or parsed, an
+ * ExceptionInInitializerError is thrown. This class is non-instantiable.
+ */
 public final class ConfigManager {
   public static final double BLACKJACK_ODDS;
   public static final boolean CAN_SURRENDER;
@@ -17,6 +23,7 @@ public final class ConfigManager {
   public static final boolean HIT_SPLIT_ACES;
   public static final boolean DOUBLE_SPLIT_ACES;
 
+  // Static block to load configuration from config.yaml at class initialization
   static {
     Yaml yaml = new Yaml();
 
@@ -43,6 +50,9 @@ public final class ConfigManager {
     }
   }
 
+  /**
+   * Private constructor to prevent instantiation.
+   */
   private ConfigManager() {
     throw new UnsupportedOperationException("GameSettings is a utility class and cannot be instantiated");
   }
