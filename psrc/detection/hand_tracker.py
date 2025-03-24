@@ -175,8 +175,14 @@ class HandTracker(IHandTracker):
     Returns:
       Dict[str, Any]: A dictionary mapping hand identifiers to their hand details (e.g., cards, score, boxes).
     """
-    boxes = [tuple(info["bbox"]) for info in tracks.values()]
-    labels = [info["label"] for info in tracks.values()]
+    # Retrieve only the confirmed cards from the tracked cards
+    stable_tracks = {
+      tid: info for tid, info in tracks.items()
+      if info.get("state", 1) == 1
+    }
+    
+    boxes = [tuple(info["bbox"]) for info in stable_tracks.values()]
+    labels = [info["label"] for info in stable_tracks.values()]
     
     # Group the bounding boxes based on their overlap
     groups = self._group_cards(boxes)
