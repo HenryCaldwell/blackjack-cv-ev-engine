@@ -24,9 +24,9 @@ class HandTracker(IHandTracker):
     self.hands_state = {}  # Dictionary to store current hands with hand index and dealer as keys
     self.overlap_threshold = overlap_threshold
 
-  def _evaluate_hand(self, cards: List[int]) -> int:
+  def _score_hand(self, cards: List[int]) -> int:
     """
-    Evaluate the total score of a hand based on card values.
+    Score a hand based on card values.
 
     Ace (represented by 0) is initially counted as 1, with an option to add 10 if it does not bust the hand.
     Cards with values 1 through 8 are valued at card value + 1. Cards with value 9 and above are counted as 10.
@@ -195,7 +195,7 @@ class HandTracker(IHandTracker):
     # Extract dealer card labels and boxes from the indices
     if dealer_indices:
       dealer_cards = [labels[idx] for idx in dealer_indices]
-      dealer_score = self._evaluate_hand(dealer_cards)
+      dealer_score = self._score_hand(dealer_cards)
       dealer_boxes = [boxes[idx] for idx in dealer_indices]
       hands_info["Dealer"] = {"cards": dealer_cards, "score": dealer_score, "boxes": dealer_boxes}
     
@@ -206,7 +206,7 @@ class HandTracker(IHandTracker):
     # Process each player group and compute the hand information
     for i, group in enumerate(player_groups, start=1):
       player_cards = [labels[idx] for idx in group]
-      score = self._evaluate_hand(player_cards)
+      score = self._score_hand(player_cards)
       hand_boxes = [boxes[idx] for idx in group]
       hands_info[f"Player {i}"] = {"cards": player_cards, "score": score, "boxes": hand_boxes}
     
