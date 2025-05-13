@@ -1,6 +1,6 @@
-from typing import Dict, List
 import jpype
-import jpype.imports
+
+from typing import Dict, List
 
 from psrc.core.interfaces.i_ev_calculator import IEVCalculator
 from psrc.evaluation.java_conversion_utils import deck_to_java_array, hand_to_java_array_list
@@ -11,12 +11,15 @@ class EVCalculatorWrapper(IEVCalculator):
   actions.
 
   This class acts as a wrapper around a Java-based EV calculator. It starts the JVM if not already running, 
-  loads the EVCalculator Java class, and delegates EV calculations for actions like "stand", "hit", "double", 
-  and "split". It also provides a method to gracefully shutdown the JVM.
+  loads the EVCalculator Java class, and delegates EV calculations for actions like "stand", "hit", "double",
+  "split", and "surrender". It also provides a method to gracefully shutdown the JVM.
   """
 
-  def __init__(self, jar_path: str = "target/blackjack-ev-calculator-1.0.0.jar",
-                java_class: str = "evaluation.EVCalculator") -> None:
+  def __init__(
+    self,
+    jar_path: str = "target/blackjack-ev-calculator-1.0.0.jar",
+    java_class: str = "evaluation.EVCalculator",
+  ) -> None:
     """
     Initialize the EVCalculatorWrapper with the path to the EV calculator JAR and the Java class name.
 
@@ -26,7 +29,6 @@ class EVCalculatorWrapper(IEVCalculator):
     """
     self.jar_path = jar_path
     self.java_class = java_class
-    self.started = False
     # Start the JVM and initialize the Java EV calculator
     self._start_jvm()
 
@@ -42,49 +44,127 @@ class EVCalculatorWrapper(IEVCalculator):
       jpype.startJVM(classpath=[self.jar_path])
 
     # Load the EVCalculator Java class and create an instance
-    self.EVCalculatorClass = jpype.JClass(self.java_class)
-    self.ev_calculator = self.EVCalculatorClass()
+    self._java_ev_cls = jpype.JClass(self.java_class)
+    self._java_ev = self._java_ev_cls()
 
-    self.started = True
-
-  def calculate_ev(self, action: str, deck: Dict[int, int],
-                    player_hand: List[int], dealer_hand: List[int]) -> float:
+  def calculate_stand_ev(
+    self,
+    deck: Dict[int, int],
+    player_hand: List[int],
+    dealer_hand: List[int],
+  ) -> float:
     """
-    Calculate the expected value (EV) for a given blackjack action.
-
-    This method maps the specified action to the corresponding Java method for EV calculation. It converts the
-    deck and hands into Java-compatible types using conversion utilities, then calls the EV calculation method
-    for the action.
+    Compute the stand EV by delegating to the Java EVCalculator.
 
     Parameters:
-      action (str): The blackjack action to evaluate (e.g., "stand", "hit", "double", "split").
-      deck (Dict[int, int]): The current deck state as a mapping from card labels to counts.
-      player_hand (List[int]): The list of card labels in the player's hand.
-      dealer_hand (List[int]): The list of card labels in the dealer's hand.
+      deck (Dict[int, int]): Mapping of card labels to remaining counts.
+      player_hand (List[int]): List of card labels in the player's hand.
+      dealer_hand (List[int]): List of card labels in the dealer's hand.
 
     Returns:
-      float: The computed expected value for the specified action.
+      float: The expected value (EV) for the stand decision.
     """
-    # Map action strings to the corresponding Java method
-    method_mapping = {
-      "stand": self.ev_calculator.calculateStandEV,
-      "hit": self.ev_calculator.calculateHitEV,
-      "double": self.ev_calculator.calculateDoubleEV,
-      "split": self.ev_calculator.calculateSplitEV,
-    }
+    return float(
+      self._java_ev.calculateStandEV(
+        deck_to_java_array(deck),
+        hand_to_java_array_list(player_hand),
+        hand_to_java_array_list(dealer_hand),
+      )
+    )
 
-    # Raise an error if an unknown action is provided
-    if action not in method_mapping:
-      raise ValueError(f"Unknown action: {action}")
+  def calculate_hit_ev(
+    self,
+    deck: Dict[int, int],
+    player_hand: List[int],
+    dealer_hand: List[int],
+  ) -> float:
+    """
+    Compute the hit EV by delegating to the Java EVCalculator.
 
-    # Convert Python deck and hand structures to Java-compatible types
-    value_counts_java = deck_to_java_array(deck)
-    player_hand_java = hand_to_java_array_list(player_hand)
-    dealer_hand_java = hand_to_java_array_list(dealer_hand)
+    Parameters:
+      deck (Dict[int, int]): Mapping of card labels to remaining counts.
+      player_hand (List[int]): List of card labels in the player's hand.
+      dealer_hand (List[int]): List of card labels in the dealer's hand.
 
-    # Call the appropriate Java method to calculate the EV and convert the result to float
-    ev = method_mapping[action](value_counts_java, player_hand_java, dealer_hand_java)
-    return float(ev)
+    Returns:
+      float: The expected value (EV) for the hit decision.
+    """
+    return float(
+      self._java_ev.calculateHitEV(
+        deck_to_java_array(deck),
+        hand_to_java_array_list(player_hand),
+        hand_to_java_array_list(dealer_hand),
+      )
+    )
+
+  def calculate_double_ev(
+    self,
+    deck: Dict[int, int],
+    player_hand: List[int],
+    dealer_hand: List[int],
+  ) -> float:
+    """
+    Compute the double EV by delegating to the Java EVCalculator.
+
+    Parameters:
+      deck (Dict[int, int]): Mapping of card labels to remaining counts.
+      player_hand (List[int]): List of card labels in the player's hand.
+      dealer_hand (List[int]): List of card labels in the dealer's hand.
+
+    Returns:
+      float: The expected value (EV) for the double decision.
+    """
+    return float(
+      self._java_ev.calculateDoubleEV(
+        deck_to_java_array(deck),
+        hand_to_java_array_list(player_hand),
+        hand_to_java_array_list(dealer_hand),
+      )
+    )
+
+  def calculate_split_ev(
+    self,
+    deck: Dict[int, int],
+    player_hand: List[int],
+    dealer_hand: List[int],
+  ) -> float:
+    """
+    Compute the split EV by delegating to the Java EVCalculator.
+
+    Parameters:
+      deck (Dict[int, int]): Mapping of card labels to remaining counts.
+      player_hand (List[int]): List of card labels in the player's hand.
+      dealer_hand (List[int]): List of card labels in the dealer's hand.
+
+    Returns:
+      float: The expected value (EV) for the split decision.
+    """
+    return float(
+      self._java_ev.calculateSplitEV(
+        deck_to_java_array(deck),
+        hand_to_java_array_list(player_hand),
+        hand_to_java_array_list(dealer_hand),
+      )
+    )
+
+  def calculate_surrender_ev(
+    self,
+    deck: Dict[int, int],
+    player_hand: List[int],
+    dealer_hand: List[int],
+  ) -> float:
+    """
+    Compute the surrender EV by returning the set value -0.5.
+
+    Parameters:
+      deck (Dict[int, int]): Mapping of card labels to remaining counts.
+      player_hand (List[int]): List of card labels in the player's hand.
+      dealer_hand (List[int]): List of card labels in the dealer's hand.
+
+    Returns:
+      float: The expected value (EV) for the surrender decision.
+    """
+    return -0.5
 
   def release(self) -> None:
     """

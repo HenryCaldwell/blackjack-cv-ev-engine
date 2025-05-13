@@ -3,25 +3,108 @@ from typing import Dict, List
 
 class IEVCalculator(ABC):
   """
-  Interface for calculating expected values (EV) for blackjack actions.
+  Interface for calculating expected values (EV) of blackjack actions.
 
-  This interface defines a method for computing the EV of various actions (e.g., hit, stand, double, split)
-  based on the current deck composition and the hands of the player and dealer.
+  This interface defines methods to compute the EV for standing, hitting, doubling, splitting, and surrendering
+  based on the current deck and hands.
   """
 
   @abstractmethod
-  def calculate_ev(self, action: str, deck: Dict[int, int],
-                    player_hand: List[int], dealer_hand: List[int]) -> float:
+  def calculate_stand_ev(
+    self,
+    deck: Dict[int, int],
+    player_hand: List[int],
+    dealer_hand: List[int]
+  ) -> float:
     """
-    Calculate the expected value (EV) for a given blackjack action.
+    Compute the expected value when the player stands.
 
     Parameters:
-      action (str): The blackjack action to evaluate (e.g., "stand", "hit", "double", "split").
-      deck (Dict[int, int]): The current deck state as a mapping from card labels to counts.
-      player_hand (List[int]): The list of card labels in the player's hand.
-      dealer_hand (List[int]): The list of card labels in the dealer's hand.
+      deck (Dict[int, int]): Mapping of card labels to remaining counts.
+      player_hand (List[int]): List of card labels in the player's hand.
+      dealer_hand (List[int]): List of card labels in the dealer's hand.
 
     Returns:
-      float: The computed expected value for the specified action.
+      float: The expected value (EV) for the stand decision.
+    """
+    pass
+
+  @abstractmethod
+  def calculate_hit_ev(
+    self,
+    deck: Dict[int, int],
+    player_hand: List[int],
+    dealer_hand: List[int]
+  ) -> float:
+    """
+    Compute the expected value when the player hits.
+
+    Parameters:
+      deck (Dict[int, int]): Mapping of card labels to remaining counts.
+      player_hand (List[int]): List of card labels in the player's hand.
+      dealer_hand (List[int]): List of card labels in the dealer's hand.
+
+    Returns:
+      float: The expected value (EV) for the hit decision.
+    """
+    pass
+
+  @abstractmethod
+  def calculate_double_ev(
+    self,
+    deck: Dict[int, int],
+    player_hand: List[int],
+    dealer_hand: List[int]
+  ) -> float:
+    """
+    Compute the expected value when the player doubles.
+
+    Parameters:
+      deck (Dict[int, int]): Mapping of card labels to remaining counts.
+      player_hand (List[int]): List of card labels in the player's hand.
+      dealer_hand (List[int]): List of card labels in the dealer's hand.
+
+    Returns:
+      float: The expected value (EV) for the double decision.
+    """
+    pass
+
+  @abstractmethod
+  def calculate_split_ev(
+    self,
+    deck: Dict[int, int],
+    player_hand: List[int],
+    dealer_hand: List[int]
+  ) -> float:
+    """
+    Compute the expected value when the player splits.
+
+    Parameters:
+      deck (Dict[int, int]): Mapping of card labels to remaining counts.
+      player_hand (List[int]): List of card labels in the player's hand.
+      dealer_hand (List[int]): List of card labels in the dealer's hand.
+
+    Returns:
+      float: The expected value (EV) for the split decision.
+    """
+    pass
+
+  @abstractmethod
+  def calculate_surrender_ev(
+    self,
+    deck: Dict[int, int],
+    player_hand: List[int],
+    dealer_hand: List[int]
+  ) -> float:
+    """
+    Compute the expected value when the player surrenders.
+
+    Parameters:
+      deck (Dict[int, int]): Mapping of card labels to remaining counts.
+      player_hand (List[int]): List of card labels in the player's hand.
+      dealer_hand (List[int]): List of card labels in the dealer's hand.
+
+    Returns:
+      float: The expected value (EV) for the surrender decision.
     """
     pass
