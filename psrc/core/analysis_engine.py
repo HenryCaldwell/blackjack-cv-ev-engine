@@ -111,10 +111,3 @@ class AnalysisEngine:
             if not self.vision_display.handle_input():
                 logger.info("Quit signal received; exiting loop")
                 break
-
-        # Release resources
-        self.video_reader.release()
-        logger.info("Video input stream released")
-        self.vision_display.release()
-        logger.info("Video output stream released")
-        logger.info("AnalysisEngine terminated")

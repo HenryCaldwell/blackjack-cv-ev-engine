@@ -69,6 +69,11 @@ def main():
 
     engine.run()
 
+    # Tear Down Resources
+    video_reader.release()
+    vision_display.release()
+    ev_calculator.release()
+
 
 if __name__ == "__main__":
     main()
