@@ -1,13 +1,16 @@
 import cv2
+import threading
 import time
+import queue
 
 from typing import Tuple
+
 from psrc.core.interfaces.i_annotator import IAnnotator
 from psrc.core.interfaces.i_card_detector import ICardDetector
 from psrc.core.interfaces.i_card_tracker import ICardTracker
-from psrc.core.interfaces.i_display import IDisplay
-from psrc.core.interfaces.i_hand_evaluator import IHandEvaluator
 from psrc.core.interfaces.i_hand_tracker import IHandTracker
+from psrc.core.interfaces.i_hand_evaluator import IHandEvaluator
+from psrc.core.interfaces.i_display import IDisplay
 from psrc.core.interfaces.i_video_stream import IVideoStreamReader
 
 from psrc.debugging.logger import setup_logger
@@ -20,8 +23,11 @@ class AnalysisEngine:
     AnalysisEngine orchestrates the video processing pipeline for card detection, tracking, hand grouping, and
     expected value calculations in a blackjack context.
 
-    It reads frames from a video source, detects and tracks cards, computes hand scores, evaluates the expected
-    value for various player actions, and displays the annotated frames.
+    It runs three concurrent threads:
+      1. Capture thread reads frames at source FPS into a single-entry queue.
+      2. Analysis thread polls that queue at a configurable interval to run detection, tracking, grouping, and EV
+      evaluation, then enqueues processed frames and metadata.
+      3. Display thread dequeues processed items, overlays annotations, renders via display, and handles quit.
     """
 
     def __init__(
@@ -32,82 +38,156 @@ class AnalysisEngine:
         hand_tracker: IHandTracker,
         hand_evaluator: IHandEvaluator,
         annotator: IAnnotator,
-        vision_display: IDisplay,
+        display: IDisplay,
         inference_interval: float = 0.25,
         inference_frame_size: Tuple[int, int] = (1280, 720),
         display_frame_size: Tuple[int, int] = (1280, 720),
     ) -> None:
         """
-        Initialize the AnalysisEngine with all the components required for the video processing workflow.
+         Initialize the AnalysisEngine with all the components required for the video processing workflow.
 
         Parameters:
           video_reader (IVideoStreamReader): The video reader instance for retrieving frames.
-          card_detector (ICardDetector): The card detector for identifying cards in frames.
-          card_tracker (ICardTracker): The card tracker for maintaining detection continuity.
+          card_detector (ICardDetector): The card detector for identifying cards in frames
+          card_tracker (ICardTracker): The card tracker for maintaining detection continuity
           hand_tracker (IHandTracker): The hand tracker for grouping cards and computing hand scores.
           hand_evaluator (IHandEvaluator): Evaluates hands and selects optimal actions.
           annotator (IAnnotator): The annotator for drawing bounding boxes and hand details on frames.
-          vision_display (IDisplay): The display interface for showing annotated frames and handling user input.
+          display (IDisplay): The display interface for showing annotated frames and handling user input.
 
-          inference_interval (float): Minimum time (in seconds) between inference steps. Default is 0.25s.
-          inference_frame_size (Tuple[int, int]): The resolution for inference processing. Default is (1920, 1080).
-          display_frame_size (Tuple[int, int]): The resolution for display output. Default is (1280, 720).
+          inference_interval (float): Minimum time (in seconds) between inference steps.
+          inference_frame_size (Tuple[int, int]): The resolution for inference processing.
+          display_frame_size (Tuple[int, int]): The resolution for display output.
         """
+        # Core components
         self.video_reader = video_reader
         self.card_detector = card_detector
         self.card_tracker = card_tracker
         self.hand_tracker = hand_tracker
         self.hand_evaluator = hand_evaluator
         self.annotator = annotator
-        self.vision_display = vision_display
+        self.display = display
+
+        # Timing & sizes
         self.inference_interval = inference_interval
         self.inference_frame_size = inference_frame_size
         self.display_frame_size = display_frame_size
+        self.source_fps = self.video_reader.get_fps()
 
-        # Track the last time we performed inference
-        self.last_update = 0.0
+        # Queues for thread data
+        self.raw_queue = queue.Queue(maxsize=1)
+        self.proc_queue = queue.Queue(maxsize=1)
+
+        # Control
+        self.running = False
+        self.last_inference = 0.0
+
+    def _capture_loop(self) -> None:
+        """
+        Continuously read frames from the video source at its native FPS and enqueue the latest frame.
+
+        This thread drops old frames to keep only the most recent one for analysis.
+        """
+        frame_period = 1.0 / self.source_fps
+
+        while self.running:
+            start = time.time()
+            frame = self.video_reader.read_frame()
+
+            if frame is None:
+                break
+
+            try:
+                self.raw_queue.put(frame, timeout=0.01)
+            except queue.Full:
+                _ = self.raw_queue.get_nowait()
+                self.raw_queue.put(frame)
+
+            elapsed = time.time() - start
+            to_wait = frame_period - elapsed
+
+            if to_wait > 0:
+                time.sleep(to_wait)
+
+    def _analysis_loop(self) -> None:
+        """
+        At fixed intervals, pull the latest raw frame, run detection, tracking, hand grouping, and EV evaluation,
+        then enqueue the processed frame and metadata for display.
+        """
+        while self.running:
+            try:
+                frame = self.raw_queue.get(timeout=1.0)
+            except queue.Empty:
+                continue
+
+            now = time.time()
+            if now - self.last_inference < self.inference_interval:
+                continue
+
+            # Preprocess
+            inf_frame = cv2.resize(frame, self.inference_frame_size)
+
+            # Detect and track
+            detections = self.card_detector.detect(inf_frame)
+            tracked = self.card_tracker.update(detections)
+            self.display.update_tracking(tracked)
+
+            # Group hands
+            hands_info = self.hand_tracker.update(tracked)
+            self.display.update_hands(hands_info)
+
+            # Evaluate EVs
+            evs = self.hand_evaluator.evaluate_hands(hands_info)
+            self.display.update_evaluation(evs)
+
+            # Enqueue for display
+            try:
+                self.proc_queue.put(
+                    (inf_frame, list(detections.keys()), tracked), timeout=0.01
+                )
+            except queue.Full:
+                _ = self.proc_queue.get_nowait()
+                self.proc_queue.put((inf_frame, list(detections.keys()), tracked))
+
+            self.last_inference = now
+
+    def _display_loop(self) -> None:
+        """
+        Pull processed frames, annotate them, render via display, and exit on user quit input.
+        """
+        while self.running:
+            try:
+                inf_frame, det_keys, tracked = self.proc_queue.get(timeout=1.0)
+            except queue.Empty:
+                continue
+
+            annotated = self.annotator.annotate(inf_frame.copy(), det_keys, tracked)
+            disp = cv2.resize(annotated, self.display_frame_size)
+            self.display.update_frame(disp)
+
+            # Quit if 'q' pressed
+            if not self.display.handle_input():
+                self.running = False
+                break
+
+        self.display.release()
 
     def run(self) -> None:
         """
-        Execute the main processing loop for video analysis.
-
-        This method continuously reads frames from the video reader, resizes them for inference, and runs card
-        detection and tracking at a specified interval. It then groups cards into hands, logs their scores,
-        calculates EV for different actions, and annotates the frame. Finally, it displays the annotated frame and
-        checks for user input to quit the loop.
+        Start capture, analysis, and display threads. Blocks until the display thread terminates (e.g., on user
+        quit), then logs shutdown.
         """
-        logger.info("Starting processing loop")
+        logger.info("Starting AnalysisEngine")
+        self.running = True
 
-        while True:
-            frame = self.video_reader.read_frame()
+        threads = [
+            threading.Thread(target=self._capture_loop, daemon=True),
+            threading.Thread(target=self._analysis_loop, daemon=True),
+            threading.Thread(target=self._display_loop, daemon=True),
+        ]
+        for t in threads:
+            t.start()
 
-            # If no frame is available, exit the loop
-            if frame is None:
-                logger.info("No frame received, exiting processing loop")
-                break
-
-            # Resize frame for inference
-            inference_frame = cv2.resize(frame, self.inference_frame_size)
-            current_time = time.time()
-
-            # Perform detection and tracking if enough time has passed
-            if current_time - self.last_update >= self.inference_interval:
-                raw_detections = self.card_detector.detect(inference_frame)
-                tracked_detections = self.card_tracker.update(raw_detections)
-                hands_info = self.hand_tracker.update(tracked_detections)
-                eval_results = self.hand_evaluator.evaluate_hands(hands_info)
-
-                logger.info("Evaluation results: %s", eval_results)
-
-                annotated_frame = self.annotator.annotate(
-                    inference_frame.copy(), raw_detections.keys(), tracked_detections
-                )
-                self.last_update = current_time
-
-            display_frame = cv2.resize(annotated_frame, self.display_frame_size)
-            self.vision_display.update(display_frame)
-
-            # Check for user input to exit
-            if not self.vision_display.handle_input():
-                logger.info("Quit signal received; exiting loop")
-                break
+        # Wait for display thread to exit
+        threads[-1].join()
+        logger.info("AnalysisEngine stopped")

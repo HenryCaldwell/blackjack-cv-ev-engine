@@ -4,9 +4,10 @@ from typing import Any
 
 class IVideoStreamReader(ABC):
     """
-    Interface for reading video streams.
+    Interface for ingesting frames from a video source.
 
-    This interface specifies methods for retrieving frames from a video source and releasing the stream.
+    This interface specifies methods for retrieving frames from a video source, querying the sources frame rate,
+    and releasing resources.
     """
 
     @abstractmethod
@@ -16,6 +17,16 @@ class IVideoStreamReader(ABC):
 
         Returns:
           Any: The next video frame, or None if no frame is available.
+        """
+        pass
+
+    @abstractmethod
+    def get_fps(self) -> float:
+        """
+        Query the frame rate of the video source.
+
+        Returns:
+          float: Frames per second provided by the source.
         """
         pass
 

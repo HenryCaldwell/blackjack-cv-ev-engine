@@ -44,6 +44,16 @@ class CVVideoStream(IVideoStreamReader):
 
         return frame
 
+    def get_fps(self) -> float:
+        """
+        Query the source's frame rate.
+
+        Returns:
+          float: Frames per second of the video source; defaults to 30.0 if unavailable.
+        """
+        fps = self.stream.get(cv2.CAP_PROP_FPS)
+        return fps if fps and fps > 0 else 30.0
+
     def release(self) -> None:
         """
         Release the video stream and any associated resources.

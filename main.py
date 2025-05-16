@@ -51,7 +51,7 @@ def main():
         thickness=settings.thickness,
     )
 
-    vision_display = CVDisplay(window_name=settings.window_name)
+    display = CVDisplay(window_name=settings.window_name)
 
     # Core Engine
     engine = AnalysisEngine(
@@ -61,7 +61,7 @@ def main():
         hand_evaluator=hand_evaluator,
         hand_tracker=hand_tracker,
         annotator=annotator,
-        vision_display=vision_display,
+        display=display,
         inference_interval=settings.inference_interval,
         inference_frame_size=tuple(settings.inference_frame_size),
         display_frame_size=tuple(settings.display_frame_size),
@@ -71,7 +71,7 @@ def main():
 
     # Tear Down Resources
     video_reader.release()
-    vision_display.release()
+    display.release()
     ev_calculator.release()
 
 

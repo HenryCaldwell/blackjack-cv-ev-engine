@@ -1,6 +1,5 @@
 import cv2
-
-from typing import Any
+from typing import Any, Dict
 
 from psrc.core.interfaces.i_display import IDisplay
 
@@ -15,14 +14,14 @@ class CVDisplay(IDisplay):
 
     def __init__(self, window_name: str = "Vision Display") -> None:
         """
-        Initialize the CVDisplay with a specified window name.
+        CVDisplay implements the IDisplay interface for displaying video frames using OpenCV.
 
-        Parameters:
-          window_name (str): The name of the display window.
+        This class creates an OpenCV window to render video frames, handles user input (such as quit commands),
+        and cleans up display resources when no longer needed.
         """
         self.window_name = window_name
 
-    def update(self, frame: Any) -> None:
+    def update_frame(self, frame: Any) -> None:
         """
         Update the display with the provided frame and render it.
 
@@ -30,6 +29,30 @@ class CVDisplay(IDisplay):
           frame (Any): The image frame to be displayed.
         """
         cv2.imshow(self.window_name, frame)
+
+    def update_tracking(self, tracked: Dict[int, Dict[str, Any]]) -> None:
+        """
+        N/A
+        """
+        pass
+
+    def update_hands(self, hands_info: Dict[str, Any]) -> None:
+        """
+        N/A
+        """
+        pass
+
+    def update_evaluation(self, evaluation: Dict[str, Any]) -> None:
+        """
+        N/A
+        """
+        pass
+
+    def update_deck(self, deck_counts: Dict[int, int]) -> None:
+        """
+        N/A
+        """
+        pass
 
     def handle_input(self) -> bool:
         """
