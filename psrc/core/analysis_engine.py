@@ -2,8 +2,7 @@ import cv2
 import threading
 import time
 import queue
-
-from typing import Tuple
+from typing import Any, Optional, Tuple
 
 from psrc.core.interfaces.i_annotator import IAnnotator
 from psrc.core.interfaces.i_card_detector import ICardDetector
@@ -72,11 +71,10 @@ class AnalysisEngine:
         self.inference_interval = inference_interval
         self.inference_frame_size = inference_frame_size
         self.display_frame_size = display_frame_size
-        self.source_fps = self.video_reader.get_fps()
 
         # Queues for thread data
-        self.raw_queue = queue.Queue(maxsize=1)
-        self.proc_queue = queue.Queue(maxsize=1)
+        self.raw_queue: queue.Queue[Optional[Any]] = queue.Queue(maxsize=1)
+        self.proc_queue: queue.Queue[Optional[Tuple]] = queue.Queue(maxsize=1)
 
         # Control
         self.running = False
@@ -85,29 +83,19 @@ class AnalysisEngine:
     def _capture_loop(self) -> None:
         """
         Continuously read frames from the video source at its native FPS and enqueue the latest frame.
-
-        This thread drops old frames to keep only the most recent one for analysis.
         """
-        frame_period = 1.0 / self.source_fps
+        fps = self.video_reader.get_fps()
+        frame_period = 1.0 / fps
 
         while self.running:
             start = time.time()
             frame = self.video_reader.read_frame()
-
             if frame is None:
+                self._enqueue_safe(self.raw_queue, None)
                 break
 
-            try:
-                self.raw_queue.put(frame, timeout=0.01)
-            except queue.Full:
-                _ = self.raw_queue.get_nowait()
-                self.raw_queue.put(frame)
-
-            elapsed = time.time() - start
-            to_wait = frame_period - elapsed
-
-            if to_wait > 0:
-                time.sleep(to_wait)
+            self._enqueue_safe(self.raw_queue, frame)
+            time.sleep(max(0.0, frame_period - (time.time() - start)))
 
     def _analysis_loop(self) -> None:
         """
@@ -120,6 +108,11 @@ class AnalysisEngine:
             except queue.Empty:
                 continue
 
+            if frame is None:
+                self._enqueue_safe(self.proc_queue, None)
+                self.running = False
+                break
+
             now = time.time()
             if now - self.last_inference < self.inference_interval:
                 continue
@@ -130,25 +123,20 @@ class AnalysisEngine:
             # Detect and track
             detections = self.card_detector.detect(inf_frame)
             tracked = self.card_tracker.update(detections)
-            self.display.update_tracking(tracked)
-
-            # Group hands
             hands_info = self.hand_tracker.update(tracked)
-            self.display.update_hands(hands_info)
 
             # Evaluate EVs
             evs = self.hand_evaluator.evaluate_hands(hands_info)
+
+            # Update display data
+            self.display.update_tracking(tracked)
+            self.display.update_hands(hands_info)
             self.display.update_evaluation(evs)
 
             # Enqueue for display
-            try:
-                self.proc_queue.put(
-                    (inf_frame, list(detections.keys()), tracked), timeout=0.01
-                )
-            except queue.Full:
-                _ = self.proc_queue.get_nowait()
-                self.proc_queue.put((inf_frame, list(detections.keys()), tracked))
-
+            self._enqueue_safe(
+                self.proc_queue, (inf_frame, list(detections.keys()), tracked)
+            )
             self.last_inference = now
 
     def _display_loop(self) -> None:
@@ -157,25 +145,42 @@ class AnalysisEngine:
         """
         while self.running:
             try:
-                inf_frame, det_keys, tracked = self.proc_queue.get(timeout=1.0)
+                item = self.proc_queue.get(timeout=1.0)
             except queue.Empty:
                 continue
 
-            annotated = self.annotator.annotate(inf_frame.copy(), det_keys, tracked)
-            disp = cv2.resize(annotated, self.display_frame_size)
-            self.display.update_frame(disp)
-
-            # Quit if 'q' pressed
-            if not self.display.handle_input():
-                self.running = False
+            if item is None:
                 break
 
-        self.display.release()
+            frame, raw_boxes, tracked = item
+
+            annotated = self.annotator.annotate(frame.copy(), raw_boxes, tracked)
+            display_frame = cv2.resize(annotated, self.display_frame_size)
+            self.display.update_frame(display_frame)
+
+            if not self.display.handle_input():
+                break
+
+        self.running = False
+
+    def _enqueue_safe(self, q: queue.Queue, item: Any) -> None:
+        """
+        Safely enqueue item into q. If the queue is full, the oldest element is discarded before enqueuing the new
+        one.
+
+        Parameters:
+          q (queue.Queue): The target queue.
+          item (Any): The element to enqueue.
+        """
+        try:
+            q.put(item, timeout=0.01)
+        except queue.Full:
+            _ = q.get_nowait()
+            q.put(item)
 
     def run(self) -> None:
         """
-        Start capture, analysis, and display threads. Blocks until the display thread terminates (e.g., on user
-        quit), then logs shutdown.
+        Start capture, analysis, and display threads. Blocks all threads until completion.
         """
         logger.info("Starting AnalysisEngine")
         self.running = True
@@ -187,7 +192,7 @@ class AnalysisEngine:
         ]
         for t in threads:
             t.start()
+        for t in threads:
+            t.join()
 
-        # Wait for display thread to exit
-        threads[-1].join()
         logger.info("AnalysisEngine stopped")
