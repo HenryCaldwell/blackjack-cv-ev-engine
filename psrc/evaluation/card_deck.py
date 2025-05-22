@@ -23,7 +23,6 @@ class CardDeck(ICardDeck):
           - 4 * deck_count copies of cards labeled 0 through 8.
           - 16 * deck_count copies for card label 9 (face cards are normalized to label 9).
         """
-        self.deck_count = deck_count
         # Initialize counts for cards 0 through 8 (each has 4 * deck_count copies)
         self.cards: Dict[int, int] = {i: 4 * deck_count for i in range(0, 9)}
         # Initialize counts for face cards (normalized to label 9, each has 16 * deck_count copies)
