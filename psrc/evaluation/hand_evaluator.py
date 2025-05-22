@@ -44,6 +44,9 @@ class HandEvaluator(IHandEvaluator):
         results: Dict[str, Any] = {}
         dealer_cards = hands_info.get("Dealer", {}).get("cards", [])
 
+        if not dealer_cards:
+            return {}
+
         # Compute EVs for each player hand, skipping over the dealer
         for hand_id, info in hands_info.items():
             if hand_id == "Dealer":
