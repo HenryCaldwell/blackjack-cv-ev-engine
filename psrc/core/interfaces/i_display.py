@@ -11,53 +11,36 @@ class IDisplay(ABC):
     """
 
     @abstractmethod
-    def update_frame(self, frame: Any) -> None:
+    def update(
+        self,
+        *,
+        frame: Any = None,
+        detections: Dict[tuple, Dict[str, Any]] = None,
+        tracks: Dict[int, Dict[str, Any]] = None,
+        hands: Dict[str, Any] = None,
+        evals: Dict[str, Any] = None,
+        deck: Dict[int, int] = None,
+    ) -> None:
         """
-        Update the display with the provided frame and render it.
+        Update any subset of the display’s state.
 
         Parameters:
-          frame (Any): The image frame to be displayed.
+          frame (Any, optional): The latest video frame to display.
+          detections (Dict[tuple, Dict[str, Any]], optional): Raw detection boxes mapped to detection info.
+          tracks (Dict[int, Dict[str, Any]], optional): Tracked card IDs mapped to bbox/label/state.
+          hands (Dict[str, Any], optional): Grouped hand information.
+          evals (Dict[str, Any], optional): Expected value results and best actions for each hand.
+          deck (Dict[int, int], optional): Current deck composition as card label count.
         """
         pass
 
     @abstractmethod
-    def update_tracking(self, tracks: Dict[int, Dict[str, Any]]) -> None:
+    def process_events(self) -> bool:
         """
-        Receive updated tracking information for each detected object.
+        Pump UI events and determine whether the display should continue running.
 
-        Parameters:
-          tracks (Dict[int, Dict[str, Any]]): Mapping from track IDs to track details.
-        """
-        pass
-
-    @abstractmethod
-    def update_hands(self, hands_info: Dict[str, Any]) -> None:
-        """
-        Receive updated grouping of tracks into hands.
-
-        Parameters:
-          hands_info (Dict[str, Any]): Mapping from hand IDs to their details.
-        """
-        pass
-
-    @abstractmethod
-    def update_evaluation(self, eval_results: Dict[str, Any]) -> None:
-        """
-        Receive updated expected value (EV) results for each hand.
-
-        Parameters:
-          eval_results (Dict[str, Any]): Mapping from hand identifiers to a structure containing EVs for available
-          actions and the recommended best action.
-        """
-        pass
-
-    @abstractmethod
-    def update_deck(self, deck_state: Dict[int, int]) -> None:
-        """
-        Receive updated card deck composition after confirmations or removals.
-
-        Parameters:
-          deck_state (Dict[int, int]): Mapping from card labels to remaining counts in the deck.
+        Returns:
+          bool: True to keep running; False to initiate shutdown.
         """
         pass
 

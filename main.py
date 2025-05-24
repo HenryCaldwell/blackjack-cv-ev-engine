@@ -1,19 +1,27 @@
-from psrc.annotation.cv_annotator import CVAnnotator
-from psrc.config.config_manager import ConfigManager
+import os
+import threading
+import logging
+
 from psrc.core.analysis_engine import AnalysisEngine
+from psrc.evaluation.card_deck import CardDeck
 from psrc.detection.card_detector import CardDetector
 from psrc.detection.card_tracker import CardTracker
-from psrc.detection.hand_tracker import HandTracker
-from psrc.evaluation.card_deck import CardDeck
+from psrc.config.config_manager import ConfigManager
+from psrc.annotation.cv_annotator import CVAnnotator
+from psrc.video.cv_video_stream import CVVideoStream
 from psrc.evaluation.ev_calculator_wrapper import EVCalculatorWrapper
 from psrc.evaluation.hand_evaluator import HandEvaluator
-from psrc.ui.cv_display import CVDisplay
-from psrc.video.cv_video_stream import CVVideoStream
+from psrc.detection.hand_tracker import HandTracker
+from psrc.ui.hybrid_display import HybridDisplay
+
+os.environ["YOLO_VERBOSE"] = "0"
+logging.getLogger("psrc.core.analysis_engine").setLevel(logging.WARNING)
+logging.getLogger("ultralytics").setLevel(logging.WARNING)
 
 
-def main():
+def main() -> None:
     """
-    Main entry point for the blackjack vision application.
+    Main entry point for the blackjack computer vision evaluation application.
 
     This function is used to load configuration settings to be passed in to the analysis engine. It initializes
     all required componenets and passes them to the analysis engine.
@@ -24,42 +32,44 @@ def main():
     source = settings.webcam_index if settings.use_webcam else settings.video_path
     video_reader = CVVideoStream(source=source)
 
-    deck = CardDeck(deck_count=settings.deck_count)
-
     card_detector = CardDetector(model_path=settings.yolo_path)
 
-    card_tracker = CardTracker(
+    deck = CardDeck(settings.deck_count)
+
+    tracker = CardTracker(
         confidence_threshold=settings.confidence_threshold,
         iou_threshold=settings.iou_threshold,
         confirmation_frames=settings.confirmation_frames,
         miss_frames=settings.removal_frames,
-        on_confirm_callback=lambda track: deck.remove_card(track.label),
+        on_confirm_callback=deck.remove_card,
     )
 
     hand_tracker = HandTracker()
 
     ev_calculator = EVCalculatorWrapper(
-        jar_path=settings.ev_jar_path, java_class=settings.ev_class_path
+        jar_path=settings.ev_jar_path,
+        java_class=settings.ev_class_path,
     )
 
     hand_evaluator = HandEvaluator(deck=deck, ev_calculator=ev_calculator)
 
     annotator = CVAnnotator(
-        confirmed_color=settings.confirmed_color,
-        tentative_color=settings.tentative_color,
+        confirmed_color=tuple(settings.confirmed_color),
+        tentative_color=tuple(settings.tentative_color),
         font_scale=settings.font_scale,
         thickness=settings.thickness,
     )
 
-    display = CVDisplay(window_name=settings.window_name)
+    display = HybridDisplay(window_name=settings.window_name)
 
     # Core Engine
     engine = AnalysisEngine(
         video_reader=video_reader,
         card_detector=card_detector,
-        card_tracker=card_tracker,
-        hand_evaluator=hand_evaluator,
+        card_tracker=tracker,
         hand_tracker=hand_tracker,
+        deck=deck,
+        hand_evaluator=hand_evaluator,
         annotator=annotator,
         display=display,
         inference_interval=settings.inference_interval,
@@ -67,12 +77,19 @@ def main():
         display_frame_size=tuple(settings.display_frame_size),
     )
 
-    engine.run()
+    # Engine Thread
+    engine_thread = threading.Thread(target=engine.start)
 
-    # Tear Down Resources
-    video_reader.release()
-    display.release()
-    ev_calculator.release()
+    try:
+        # Start Engine and Display
+        engine_thread.start()
+        display.start()
+    finally:
+        # Tear Down Resources
+        engine_thread.join()
+        video_reader.release()
+        display.release()
+        ev_calculator.release()
 
 
 if __name__ == "__main__":
