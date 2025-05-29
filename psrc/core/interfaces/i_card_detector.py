@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from typing import Any, Dict
+from typing import Any, Dict, Tuple
 
 
 class ICardDetector(ABC):
@@ -11,7 +11,7 @@ class ICardDetector(ABC):
     """
 
     @abstractmethod
-    def detect(self, frame: Any) -> Dict[tuple, Dict[str, Any]]:
+    def detect(self, frame: Any) -> Dict[Tuple, Dict[str, Any]]:
         """
         Detect cards within a given frame.
 
@@ -19,6 +19,6 @@ class ICardDetector(ABC):
             frame (Any): The frame in which to detect.
 
         Returns:
-            Dict[tuple, Dict[str, Any]]: A mapping of bounding box coordinates to their detection information.
+            Dict[Tuple, Dict[str, Any]]: A mapping of bounding box coordinates to their detection information.
         """
         pass

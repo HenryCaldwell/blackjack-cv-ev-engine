@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from typing import Any, Dict
+from typing import Any, Dict, Tuple
 
 
 class IFrameAnnotator(ABC):
@@ -14,7 +14,7 @@ class IFrameAnnotator(ABC):
     def annotate(
         self,
         frame: Any,
-        detections: Dict[tuple, Dict[str, Any]],
+        detections: Dict[Tuple, Dict[str, Any]],
         tracks: Dict[int, Dict[str, Any]],
     ) -> Any:
         """
@@ -22,7 +22,7 @@ class IFrameAnnotator(ABC):
 
         Parameters:
             frame (Any): The frame to annotate.
-            detections (Dict[tuple, Dict[str, Any]]): A mapping of bounding box coordinates to their detection
+            detections (Dict[Tuple, Dict[str, Any]]): A mapping of bounding box coordinates to their detection
             information.
             tracks (Dict[int, Dict[str, Any]]): A mapping of track IDs to their tracking information.
 

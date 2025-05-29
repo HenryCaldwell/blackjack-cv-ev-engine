@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from typing import Any, Dict
+from typing import Any, Dict, Tuple
 
 
 class IDisplay(ABC):
@@ -16,7 +16,7 @@ class IDisplay(ABC):
         self,
         *,
         frame: Any = None,
-        detections: Dict[tuple, Dict[str, Any]] = None,
+        detections: Dict[Tuple, Dict[str, Any]] = None,
         tracks: Dict[int, Dict[str, Any]] = None,
         hands: Dict[str, Dict[str, Any]] = None,
         evals: Dict[str, Dict[str, Any]] = None,
@@ -27,7 +27,7 @@ class IDisplay(ABC):
 
         Parameters:
             frame (Any, optional): The frame for display.
-            detections (Dict[tuple, Dict[str, Any]], optional): A mapping of bounding box coordinates to their
+            detections (Dict[Tuple, Dict[str, Any]], optional): A mapping of bounding box coordinates to their
             detection information.
             tracks (Dict[int, Dict[str, Any]], optional): A mapping of track IDs to their tracking information.
             hands (Dict[str, Dict[str, Any]], optional): A mapping of hand IDs to their hand information.

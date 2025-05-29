@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from typing import Any, Dict
+from typing import Any, Dict, Tuple
 
 
 class ICardTracker(ABC):
@@ -12,13 +12,13 @@ class ICardTracker(ABC):
 
     @abstractmethod
     def update(
-        self, detections: Dict[tuple, Dict[str, Any]]
+        self, detections: Dict[Tuple, Dict[str, Any]]
     ) -> Dict[int, Dict[str, Any]]:
         """
         Update tracked cards using new detections.
 
         Parameters:
-            detections (Dict[tuple, Dict[str, Any]]): A mapping of bounding box coordinates to their detection
+            detections (Dict[Tuple, Dict[str, Any]]): A mapping of bounding box coordinates to their detection
             information.
 
         Returns:
