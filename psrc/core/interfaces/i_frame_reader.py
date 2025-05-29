@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Any
 
 
-class IVideoStreamReader(ABC):
+class IFrameReader(ABC):
     """
     Interface for ingesting frames from a video source.
 

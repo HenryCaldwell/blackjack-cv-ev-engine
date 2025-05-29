@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict, Tuple
 
 
-class IAnnotator(ABC):
+class IFrameAnnotator(ABC):
     """
     Interface for annotating video frames with detection information.
 

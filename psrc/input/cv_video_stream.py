@@ -2,10 +2,10 @@ import cv2
 
 from typing import Any, Union
 
-from psrc.core.interfaces.i_video_stream import IVideoStreamReader
+from psrc.core.interfaces.i_frame_reader import IFrameReader
 
 
-class CVVideoStream(IVideoStreamReader):
+class CVVideoStream(IFrameReader):
     """
     CVVideoStream implements the IVideoStreamReader interface for reading video streams using OpenCV.
 

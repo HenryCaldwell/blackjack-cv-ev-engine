@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Dict, List
 
 
-class IEVCalculator(ABC):
+class IExpectedValueCalculator(ABC):
     """
     Interface for calculating expected values (EV) of blackjack actions.
 

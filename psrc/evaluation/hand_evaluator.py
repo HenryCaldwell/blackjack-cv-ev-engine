@@ -2,7 +2,7 @@ from typing import Any, Dict
 
 from psrc.core.interfaces.i_hand_evaluator import IHandEvaluator
 from psrc.core.interfaces.i_card_deck import ICardDeck
-from psrc.core.interfaces.i_ev_calculator import IEVCalculator
+from psrc.core.interfaces.i_ev_calculator import IExpectedValueCalculator
 
 
 class HandEvaluator(IHandEvaluator):
@@ -14,7 +14,9 @@ class HandEvaluator(IHandEvaluator):
     hit, double, split, and surrender.
     """
 
-    def __init__(self, deck: ICardDeck, ev_calculator: IEVCalculator) -> None:
+    def __init__(
+        self, deck: ICardDeck, ev_calculator: IExpectedValueCalculator
+    ) -> None:
         """
         Initialize the HandEvaluator with a deck and EV calculator.
 

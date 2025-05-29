@@ -9,10 +9,10 @@ from matplotlib.patches import Rectangle
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 from typing import Any, Dict
 
-from psrc.core.interfaces.i_annotator import IAnnotator
+from psrc.core.interfaces.i_frame_annotator import IFrameAnnotator
 
 
-class MPLAnnotator(IAnnotator):
+class MPLAnnotator(IFrameAnnotator):
     """
     MPLAnnotator implements the IAnnotator interface for rendering tracked bounding boxes and labels onto video
     frames.

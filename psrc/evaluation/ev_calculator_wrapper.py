@@ -2,14 +2,14 @@ import jpype
 
 from typing import Dict, List
 
-from psrc.core.interfaces.i_ev_calculator import IEVCalculator
+from psrc.core.interfaces.i_ev_calculator import IExpectedValueCalculator
 from psrc.evaluation.java_conversion_utils import (
     deck_to_java_array,
     hand_to_java_array_list,
 )
 
 
-class EVCalculatorWrapper(IEVCalculator):
+class EVCalculatorWrapper(IExpectedValueCalculator):
     """
     EVCalculatorWrapper implements the IEVCalculator interface for calculating expected values (EV) for blackjack
     actions.
