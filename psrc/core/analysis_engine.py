@@ -4,14 +4,14 @@ import time
 import queue
 from typing import Any, Optional, Tuple
 
-from psrc.core.interfaces.i_frame_annotator import IAnnotator
+from psrc.core.interfaces.i_frame_annotator import IFrameAnnotator
 from psrc.core.interfaces.i_card_deck import ICardDeck
 from psrc.core.interfaces.i_card_detector import ICardDetector
 from psrc.core.interfaces.i_card_tracker import ICardTracker
 from psrc.core.interfaces.i_hand_tracker import IHandTracker
 from psrc.core.interfaces.i_hand_evaluator import IHandEvaluator
 from psrc.core.interfaces.i_display import IDisplay
-from psrc.core.interfaces.i_frame_reader import IVideoStreamReader
+from psrc.core.interfaces.i_frame_reader import IFrameReader
 
 from psrc.debugging.logger import setup_logger
 
@@ -29,13 +29,13 @@ class AnalysisEngine:
 
     def __init__(
         self,
-        video_reader: IVideoStreamReader,
+        video_reader: IFrameReader,
         card_detector: ICardDetector,
         card_tracker: ICardTracker,
         hand_tracker: IHandTracker,
         deck: ICardDeck,
         hand_evaluator: IHandEvaluator,
-        annotator: IAnnotator,
+        annotator: IFrameAnnotator,
         display: IDisplay,
         inference_interval: float = 0.25,
         inference_frame_size: Tuple[int, int] = (1280, 720),
