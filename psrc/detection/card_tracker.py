@@ -1,6 +1,6 @@
-import numpy as np
-
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple
+
+import numpy as np
 from scipy.optimize import linear_sum_assignment
 
 from psrc.core.interfaces.i_card_tracker import ICardTracker
@@ -26,24 +26,24 @@ class Track:
     Represents an individual tracked card with its properties.
 
     Attributes:
-      track_id (int): Unique identifier for the track.
-      bbox (Tuple[float, float, float, float]): Bounding box coordinates of the card.
-      state (int): Current state of the track (TENTATIVE, CONFIRMED, or DELETED).
-      hits (int): Number of consecutive frames where the card was detected.
-      misses (int): Number of consecutive frames where the card was not detected.
-      label (Any): Label or category associated with the detection.
+        track_id (int): A unique identifier for the track.
+        bbox (Tuple[float, float, float, float]): The bounding box coordinates of the card.
+        state (int): The current state of the track.
+        hits (int): The number of consecutive frames the card was detected.
+        misses (int): The number of consecutive frames the card was not detected.
+        label (Any): The label associated with the detection.
     """
 
     def __init__(
         self, track_id: int, bbox: Tuple[float, float, float, float], label: Any
     ) -> None:
         """
-        Initialize a new Track instance.
+        Initialize Track with track parameters.
 
         Parameters:
-          track_id (int): Unique identifier for the track.
-          bbox (Tuple[float, float, float, float]): Initial bounding box coordinates.
-          label (Any): Label detected for the card.
+            track_id (int): A unique identifier for the track.
+            bbox (Tuple[float, float, float, float]): The bounding box coordinates of the card.
+            label (Any): The label associated with the detection.
         """
         self.track_id = track_id
         self.bbox = bbox
@@ -52,28 +52,27 @@ class Track:
         self.hits = 1
         self.misses = 0
 
-    def register_hit(
-        self, new_bbox: Tuple[float, float, float, float], new_label: Any
-    ) -> None:
+    def register_hit(self, bbox: Tuple[float, float, float, float], label: Any) -> None:
         """
         Update the track with a new detection.
 
-        Resets the miss count, increments the hit count, and updates the bounding box and label.
+        This method resets the miss count, increments the hit count, and updates the bounding box and label
+        based on the new detection.
 
         Parameters:
-          new_bbox (Tuple[float, float, float, float]): New bounding box coordinates.
-          new_label (Any): Updated label for the card.
+            bbox  (Tuple[float, float, float, float]): The new bounding box.
+            label (Any): The updated label for the card.
         """
-        self.bbox = new_bbox
-        self.label = new_label
+        self.bbox = bbox
+        self.label = label
         self.misses = 0
         self.hits += 1
 
     def register_miss(self) -> None:
         """
-        Update the track with a miss when no detection is associated.
+        Update the track with a miss.
 
-        Increments the miss count and resets the hit count.
+        This method increments the miss count and resets the hit count.
         """
         self.misses += 1
         self.hits = 0
@@ -81,11 +80,11 @@ class Track:
 
 class CardTracker(ICardTracker):
     """
-    CardTracker implements the ICardTracker interface for tracking card detections across video frames.
+    CardTracker is an implementation of the ICardTracker interface.
 
-    This class uses data association via the Hungarian algorithm to match new detections with existing tracks
-    based on Intersection over Union (IoU). Tracks are updated based on hits and misses, and are confirmed after a
-    specified number of consecutive hits.
+    This implementation maintains active card tracks across frames by associating new detections to existing
+    tracks via the Hungarian algorithm on IoU costs. It updates hits/misses, confirms tracks after consecutive
+    hits, deletes stale tracks after misses, and invokes an optional callback on confirmation.
     """
 
     def __init__(
@@ -93,37 +92,43 @@ class CardTracker(ICardTracker):
         confidence_threshold: float,
         iou_threshold: float,
         confirmation_frames: int = 5,
-        miss_frames: int = 10,
+        removal_frames: int = 10,
         on_confirm_callback: Optional[Callable[[Track], None]] = None,
     ) -> None:
         """
-        Initialize the CardTracker with tracking parameters and an optional callback.
+        Initialize CardTracker with parameters and an optional confirmation callback.
+
+        A callback can be provided to react whenever a track is confirmed.
 
         Parameters:
-          confidence_threshold (float): Minimum confidence required to consider a detection valid.
-          iou_threshold (float): Minimum IoU required for matching a detection with an existing track.
-          confirmation_frames (int): Minimum number of consecutive hits required to confirm a track.
-          miss_frames (int): Maximum allowed consecutive missed detections before deleting a track.
-          on_confirm_callback (Optional[Callable[[Track], None]]): Function to call when a track is confirmed.
+            confidence_threshold (float): The minimum detection confidence to consider.
+            iou_threshold (float): The minimum IoU for matching a detection to a track.
+            confirmation_frames (int): The hits required to confirm a new track.
+            removal_frames (int): The misses required before deleting a track.
+            on_confirm_callback (Optional[Callable[[Track], None]]): Function called with the Track when
+            confirmed.
         """
-        self.tracks = {}  # Dictionary to store active tracks with track_id as keys
+        self.tracks = {}
         self.next_track_id = 0
         self.confidence_threshold = confidence_threshold
         self.iou_threshold = iou_threshold
         self.confirmation_frames = confirmation_frames
-        self.miss_frames = miss_frames
+        self.removal_frames = removal_frames
         self.on_confirm_callback = on_confirm_callback
 
     def _compute_iou(self, boxes1: np.ndarray, boxes2: np.ndarray) -> np.ndarray:
         """
-        Compute the Intersection over Union (IoU) between two sets of bounding boxes.
+        Compute the Intersection over Union (IoU) between two box sets.
+
+        This method handles reshaping of inputs, computes pairwise intersection areas, and divides by the union
+        areas to produce an IoU matrix.
 
         Parameters:
-          boxes1 (np.ndarray): Array of bounding boxes (shape: [N, 4]).
-          boxes2 (np.ndarray): Array of bounding boxes (shape: [M, 4]).
+            boxes1 (np.ndarray): An array of bounding boxes (shape: [N, 4]).
+            boxes2 (np.ndarray): An array of bounding boxes (shape: [M, 4]).
 
         Returns:
-          np.ndarray: IoU matrix of shape (N, M) where each element represents the IoU between boxes.
+            np.ndarray: An IoU matrix of shape (N, M).
         """
         # Ensure boxes are 2-dimensional arrays (N, 4)
         if boxes1.ndim != 2:
@@ -157,18 +162,17 @@ class CardTracker(ICardTracker):
         self, detection_boxes: List[Tuple[float, float, float, float]]
     ) -> Tuple[Dict[int, int], Set[int]]:
         """
-        Perform data association between existing tracks and new detections using the Hungarian algorithm.
+        Perform data association using the Hungarian algorithm on IoU cost.
 
-        Computes the IoU between track bounding boxes and new detection boxes. Detections are assigned to tracks
-        if the IoU is above the given threshold.
+        This method converts IoU to a cost matrix (1 - IoU), solves the assignment problem, and then filters
+        matches below the IoU threshold. Unmatched detections are returned separately.
 
         Parameters:
-          detection_boxes (List[Tuple[float, float, float, float]]): List of bounding boxes from new detections.
+            detection_boxes (List[Tuple[float, float, float, float]]): A list of bounding boxes.
 
         Returns:
-          Tuple[Dict[int, int], Set[int]]:
-            - A dictionary mapping track IDs to indices of detection boxes.
-            - A set of indices representing unmatched detections.
+            Tuple[Dict[int, int], Set[int]]: A mapping of track IDs to indices of detection boxes and a set of
+            indices representing unmatched detections.
         """
         # If there are no new detections, return empty assignments and an empty set for unmatched detections
         if len(detection_boxes) == 0:
@@ -212,19 +216,17 @@ class CardTracker(ICardTracker):
         detections: Dict[Tuple[float, float, float, float], Dict[str, Any]],
     ) -> None:
         """
-        Update existing tracks based on the assignment of detections.
+        Update existing tracks based on matched and unmatched detections.
 
-        For tracks with an assigned detection, update the bounding box and label, and increment hit counts. If a
-        tentative track reaches the confirmation threshold, mark it as confirmed and trigger the lock callback.
-        Tracks that are not assigned a detection register a miss will be removed if they exceed the allowed misses.
-        Unmatched detections start new tracks.
+        This method registers hits for assigned tracks (confirming if hits reach the threshold), registers
+        misses for others (deleting when too many), and spawns new Track objects for any unmatched detections.
 
         Parameters:
-          assignments (Dict[int, int]): Mapping of track IDs to detection indices.
-          unmatched_detections (Set[int]): Set of detection indices that were not assigned to any track.
-          detection_boxes (List[Tuple[float, float, float, float]]): List of detection bounding boxes.
-          detections (Dict[Tuple[float, float, float, float], Dict[str, Any]]): Dictionary of detection details
-          keyed by bounding box.
+            assignments (Dict[int, int]): A mapping of track IDs to their corresponding detection index.
+            unmatched_detections (Set[int]): A set of detection indices with no assignment.
+            detection_boxes (List[Tuple[...]]): A list of detection boxes.
+            detections (Dict[Tuple, Dict[str, Any]]): A mapping of bounding box coordinates to their detection
+            information.
         """
         # Process tracks that have been assigned a detection
         for track_id, det_idx in assignments.items():
@@ -249,7 +251,7 @@ class CardTracker(ICardTracker):
             if track_id not in assignments:
                 self.tracks[track_id].register_miss()
 
-                if self.tracks[track_id].misses > self.miss_frames:
+                if self.tracks[track_id].misses > self.removal_frames:
                     del self.tracks[track_id]
 
         # Create new tracks for any detection that was not matched to an existing track
@@ -263,21 +265,20 @@ class CardTracker(ICardTracker):
             self.next_track_id += 1
 
     def update(
-        self, detections: Dict[Tuple[float, float, float, float], Dict[str, Any]]
+        self, detections: Dict[Tuple, Dict[str, Any]]
     ) -> Dict[int, Dict[str, Any]]:
         """
-        Update tracked card information using new detections.
+        Update tracked cards using new detections.
 
-        This method converts detection bounding boxes into a list, performs data association with existing tracks,
-        and updates each track based on matches and misses.
+        This implementation converts detection bounding boxes into a list, performs data association and track
+        updates, and returns the assembled mapping.
 
         Parameters:
-          detections (Dict[Tuple[float, float, float, float], Dict[str, Any]]): Dictionary mapping detection
-          bounding boxes to detection details.
+            detections (Dict[Tuple, Dict[str, Any]]): A mapping of bounding box coordinates to their detection
+            information.
 
         Returns:
-          Dict[int, Dict[str, Any]]: Dictionary mapping track IDs to a dictionary containing the bounding box,
-          label, and current state.
+            Dict[int, Dict[str, Any]]: A mapping of track IDs to their tracking information.
         """
         detection_boxes = [list(bbox) for bbox in detections.keys()]
         assignments, unmatched_detections = self._data_association(detection_boxes)

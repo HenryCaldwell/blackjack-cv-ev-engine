@@ -1,41 +1,40 @@
-import numpy as np
+from typing import Any, Dict, Tuple
 
-from typing import Any, Dict
 from ultralytics import YOLO
 
 from psrc.core.interfaces.i_card_detector import ICardDetector
 
-# from psrc.detection.detection_utils import compute_overlap
-
 
 class CardDetector(ICardDetector):
     """
-    CardDetector implements the ICardDetector interface for detecting cards in video frames.
+    CardDetector is an implementation of the ICardDetector interface.
 
-    This class leverages a YOLO model to perform object detection and returns detection results.
+    This implementation wraps an Ultralytics YOLO model to run inference on individual frames and extract
+    bounding boxes, class labels, and confidence scores.
     """
 
     def __init__(self, model_path: str) -> None:
         """
-        Initialize the CardDetector with a YOLO model and an overlap threshold.
+        Initialize CardDetector with a YOLO model.
 
         Parameters:
-          model_path (str): Path to the YOLO model file.
+            model_path (str): A filepath to pretrained YOLO weights.
         """
         self.model = YOLO(model_path)
 
-    def detect(self, frame: Any) -> Dict[tuple, Dict[str, Any]]:
+    def detect(self, frame: Any) -> Dict[Tuple, Dict[str, Any]]:
         """
-        Detect cards in the provided video frame.
+        Detect cards within a given frame.
 
-        The method runs the YOLO model on the frame, extracting bounding boxes, confidence scores, and labels.
+        This implementation runs the YOLO model on the provided frame, extracts the bounding boxes, class
+        indices, and confidence scores, converts them into Python-native lists, and returns the assembled
+        mapping.
 
         Parameters:
-          frame (Any): The image frame in which to detect cards.
+            frame (Any): The frame in which to detect.
 
         Returns:
-          Dict[tuple, Dict[str, Any]]: A dictionary mapping bounding box coordinates (as tuples) to their
-          detection information (e.g., label, confidence).
+            Dict[Tuple, Dict[str, Any]]: A mapping of bounding box coordinates to their detection information.
         """
         # Run the YOLO model on the frame
         results = self.model(frame, show=False)

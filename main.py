@@ -40,7 +40,7 @@ def main() -> None:
         confidence_threshold=settings.confidence_threshold,
         iou_threshold=settings.iou_threshold,
         confirmation_frames=settings.confirmation_frames,
-        miss_frames=settings.removal_frames,
+        removal_frames=settings.removal_frames,
         on_confirm_callback=lambda track: deck.remove_card(track.label),
     )
 

@@ -1,44 +1,41 @@
-import numpy as np
-
 from typing import Any, Dict, List, Tuple
+
+import numpy as np
 
 from psrc.core.interfaces.i_hand_tracker import IHandTracker
 
 
 class HandTracker(IHandTracker):
     """
-    HandTracker implements the IHandTracker interface for tracking and grouping card tracks into blackjack hands.
+    HandTracker is an implementation of the IHandTracker interface.
 
-    This class groups card tracks into hands using an overlap-based grouping algorithm and evaluates the hand
-    scores using a predefined evaluation method. Hands with a single card are assumed to belong to the dealer,
-    while hands with multiple cards are assumed to belong to players.
+    This implementation groups confirmed card tracks into blackjack hands based on bounding-box overlap,
+    scores each hand, and maintains the latest hand state.
     """
 
     def __init__(self, overlap_threshold: float = 0.1) -> None:
         """
-        Initialize the HandTracker with an empty state and set the overlap threshold.
+        Initialize HandTracker with an overlap threshold.
 
         Parameters:
-          overlap_threshold (float): Minimum required overlap between bounding boxes to consider them part of the
-          same group.
+            overlap_threshold (float): Minimum ratio of intersection to smaller-box area for boxes to be
+            considered in the same hand.
         """
-        self.hands_state = (
-            {}
-        )  # Dictionary to store current hands with hand index and dealer as keys
+        self.hands = {}
         self.overlap_threshold = overlap_threshold
 
     def _score_hand(self, cards: List[int]) -> int:
         """
-        Score a hand based on card values.
+        Score a hand based on blackjack rules.
 
-        Ace (represented by 0) is initially counted as 1, with an option to add 10 if it does not bust the hand.
-        Cards with values 1 through 8 are valued at card value + 1. Cards with value 9 and above are counted as 10.
+        This method counts aces as 1, with an option to add 10 if it does not bust the hand. Cards with values 1
+        through 8 are valued at card value + 1. Cards with value 9 and above are counted as 10.
 
         Parameters:
-          cards (List[int]): A list of card labels.
+            cards (List[int]): A list of card labels.
 
         Returns:
-          int: The calculated score of the hand.
+            int: The best hand value less than or equal to 21.
         """
         total = 0
         aces = 0
@@ -62,18 +59,16 @@ class HandTracker(IHandTracker):
 
     def _compute_overlap_matrix(self, boxes: np.ndarray) -> np.ndarray:
         """
-        Compute the overlap matrix for a set of bounding boxes.
+        Compute overlap ratios between all pairs of boxes.
 
-        The overlap for a pair of boxes is computed as the ratio of the area of their intersection to the area of
-        the smaller box. This results in a symmetric matrix where each element (i, j) indicates the overlap
-        between boxes i and j.
+        This method calculates intersection area over the smaller box’s area for each pair.
 
         Parameters:
-          boxes (np.ndarray): An array of bounding boxes of shape (N, 4), where each box is represented by [x_min,
-          y_min, x_max, y_max].
+            boxes (np.ndarray): An array of bounding boxes of shape (N, 4), with each box as [x_min, y_min,
+            x_max, y_max].
 
         Returns:
-          np.ndarray: A (N, N) matrix where each element represents the overlap ratio between two boxes.
+            np.ndarray: A (N, N) matrix where each element represents the overlap ratio between two boxes.
         """
         # Extract the coordinates for each bounding box
         x_min = boxes[:, 0]
@@ -107,18 +102,16 @@ class HandTracker(IHandTracker):
         self, boxes: List[Tuple[float, float, float, float]]
     ) -> List[List[int]]:
         """
-        Group cards based on the overlap of their bounding boxes using a union-find algorithm.
+        Group boxes into clusters where overlap is greater than or equal to the overlap threshold.
 
-        The method computes an overlap matrix and considers two boxes as connected if their overlap exceeds the
-        defined threshold. It then uses a union-find (disjoint set) data structure to cluster connected boxes
-        together.
+        This method builds an adjacency matrix from overlap ratios and uses union-find to cluster connected
+        indices into hands.
 
         Parameters:
-          boxes (List[Tuple[float, float, float, float]]): List of bounding boxes for the detected cards.
+            boxes (List[Tuple[float, float, float, float]]): A list of bounding boxes.
 
         Returns:
-          List[List[int]]: A list of groups, where each group is a list of indices corresponding to boxes that
-          belong to the same hand.
+            List[List[int]]: A list of groups, where the inner list is the indices of boxes in one hand.
         """
         n = len(boxes)
 
@@ -175,18 +168,17 @@ class HandTracker(IHandTracker):
 
     def update(self, tracks: Dict[int, Dict[str, Any]]) -> Dict[str, Any]:
         """
-        Update the hand tracker with new card tracks and group them into hands.
+        Update hands using new card tracks.
 
-        This method takes in a dictionary of card tracks, groups the associated bounding boxes into hands using an
-        overlap-based grouping algorithm, and evaluates the score for each hand. A single-card group is assumed to
-        be the dealer's hand, while groups with multiple cards are considered player hands.
+        This implementation filters to only confirmed tracks, groups their bounding boxes into hands, assigns
+        single-box groups to the dealer and multi-box groups to players in left-to-right order, scores each
+        hand, and returns the assembled mapping.
 
         Parameters:
-          tracks (Dict[int, Dict[str, Any]]): Dictionary of card tracks, where each track contains detection info
-          such as 'bbox' and 'label'.
+            tracks (Dict[int, Dict[str, Any]]): A mapping of track IDs to their tracking information.
 
         Returns:
-          Dict[str, Any]: A dictionary mapping hand identifiers to their hand details (e.g., cards, score, boxes).
+            Dict[str, Dict[str, Any]]: A mapping of hand IDs to their hand information.
         """
         # Retrieve only the confirmed cards from the tracked cards
         stable_tracks = {
@@ -232,5 +224,5 @@ class HandTracker(IHandTracker):
                 "boxes": hand_boxes,
             }
 
-        self.hands_state = hands_info
+        self.hands = hands_info
         return hands_info
