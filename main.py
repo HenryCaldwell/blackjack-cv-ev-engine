@@ -8,7 +8,7 @@ from psrc.detection.card_detector import CardDetector
 from psrc.detection.card_tracker import CardTracker
 from psrc.config.config_manager import ConfigManager
 from psrc.annotation.mpl_annotator import MPLAnnotator
-from psrc.video.cv_video_stream import CVVideoStream
+from psrc.input.cv_video_stream import CVVideoStream
 from psrc.evaluation.ev_calculator_wrapper import EVCalculatorWrapper
 from psrc.evaluation.hand_evaluator import HandEvaluator
 from psrc.detection.hand_tracker import HandTracker
@@ -41,7 +41,7 @@ def main() -> None:
         iou_threshold=settings.iou_threshold,
         confirmation_frames=settings.confirmation_frames,
         miss_frames=settings.removal_frames,
-        on_confirm_callback=deck.remove_card,
+        on_confirm_callback=lambda track: deck.remove_card(track.label),
     )
 
     hand_tracker = HandTracker()
