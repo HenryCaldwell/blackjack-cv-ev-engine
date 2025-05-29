@@ -15,7 +15,6 @@ analysis_settings:
 
   # Inference Parameters
   inference_interval: 0.1 # Seconds between inference updates
-  inference_frame_size: [1920, 1080] # Frame resolution for inference
 
   # Detection & Grouping Parameters
   overlap_threshold: 0.1 # For grouping cards into hands
@@ -27,17 +26,18 @@ analysis_settings:
   removal_frames: 20 # Frames after which a card is dropped from tracking
 
   # ------------------------------------------------------------
-  # ANNOTATION SETTINGS
+  # RESOLUTION SETTINGS
   # ------------------------------------------------------------
 
-  display_frame_size: [1280, 720] # Frame resolution for display
-  window_name: "blackjack_cv_analyzer" # Name of the display window
+  inference_frame_size: [1920, 1080] # Frame resolution for inference
+  annotation_frame_size: [1280, 720] # Frame resolution for annotation
+  window_frame_size: [1280, 720] # Frame resolution for window
 
-  confirmed_color: [0, 255, 0] # Color for annotating confirmed cards (in BGR)
-  tentative_color: [0, 0, 255] # Color for annotating tentative cards (in BGR)
+  # ------------------------------------------------------------
+  # DISPLAY SETTINGS
+  # ------------------------------------------------------------
 
-  font_scale: 1.2 # Scale factor for annotation text
-  thickness: 2 # Thickness for drawing rectangles and text
+  window_name: "Blackjack CV EV Engine" # Name of the window
 
   # ------------------------------------------------------------
   # BLACKJACK LOGIC SETTINGS

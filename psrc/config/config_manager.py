@@ -68,7 +68,6 @@ class ConfigManager:
 
         # Set inference parameters
         self.inference_interval = settings["inference_interval"]
-        self.inference_frame_size = tuple(settings["inference_frame_size"])
 
         # Set thresholds for inference
         self.overlap_threshold = settings["overlap_threshold"]
@@ -79,15 +78,13 @@ class ConfigManager:
         self.confirmation_frames = settings["confirmation_frames"]
         self.removal_frames = settings["removal_frames"]
 
+        # Set resolution parameters
+        self.inference_frame_size = tuple(settings["inference_frame_size"])
+        self.annotation_frame_size = tuple(settings["annotation_frame_size"])
+        self.window_frame_size = tuple(settings["window_frame_size"])
+
         # Set display parameters
-        self.display_frame_size = tuple(settings["display_frame_size"])
         self.window_name = settings["window_name"]
 
-        # Set text settings
-        self.confirmed_color = tuple(settings["confirmed_color"])
-        self.tentative_color = tuple(settings["tentative_color"])
-        self.font_scale = settings["font_scale"]
-        self.thickness = settings["thickness"]
-
-        # Set the deck count parameter
+        # Set deck parameters
         self.deck_count = settings["deck_count"]

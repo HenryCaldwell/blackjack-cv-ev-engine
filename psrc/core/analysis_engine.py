@@ -39,7 +39,7 @@ class AnalysisEngine:
         display: IDisplay,
         inference_interval: float = 0.25,
         inference_frame_size: Tuple[int, int] = (1280, 720),
-        display_frame_size: Tuple[int, int] = (1280, 720),
+        annotation_frame_size: Tuple[int, int] = (1280, 720),
     ) -> None:
         """
          Initialize the AnalysisEngine with all the components required for the video processing workflow.
@@ -56,7 +56,7 @@ class AnalysisEngine:
 
           inference_interval (float): The minimum time (in seconds) between inference steps.
           inference_frame_size (Tuple[int, int]): The resolution for inference processing.
-          display_frame_size (Tuple[int, int]): The resolution for display output.
+          annotation_frame_size (Tuple[int, int]): The resolution for display output.
         """
         # Core components
         self.video_reader = video_reader
@@ -71,7 +71,7 @@ class AnalysisEngine:
         # Timing & sizes
         self.inference_interval = inference_interval
         self.inference_frame_size = inference_frame_size
-        self.display_frame_size = display_frame_size
+        self.annotation_frame_size = annotation_frame_size
 
         # Queues for thread data
         self.frame_queue: queue.Queue[Optional[Any]] = queue.Queue(maxsize=1)
@@ -170,12 +170,44 @@ class AnalysisEngine:
                 deck,
             ) = bundle
 
-            detection_boxes = list(detections.keys())
-            annotated = self.annotator.annotate(frame, detection_boxes, tracks)
-            display_frame = cv2.resize(annotated, self.display_frame_size)
+            h_inf, w_inf = frame.shape[:2]
+            w_disp, h_disp = self.annotation_frame_size
+            scale_x, scale_y = w_disp / w_inf, h_disp / h_inf
+
+            resized_frame = cv2.resize(frame, (w_disp, h_disp))
+
+            scaled_detections = {}
+            for raw_bbox, det_meta in detections.items():
+                x1, y1, x2, y2 = map(int, raw_bbox)
+                scaled_box = (
+                    int(x1 * scale_x),
+                    int(y1 * scale_y),
+                    int(x2 * scale_x),
+                    int(y2 * scale_y),
+                )
+                new_meta = det_meta.copy()
+                scaled_detections[scaled_box] = new_meta
+
+            scaled_tracks = {}
+            for track_id, tr_meta in tracks.items():
+                raw_bbox = tr_meta["bbox"]
+                x1, y1, x2, y2 = map(int, raw_bbox)
+                scaled_box = (
+                    int(x1 * scale_x),
+                    int(y1 * scale_y),
+                    int(x2 * scale_x),
+                    int(y2 * scale_y),
+                )
+                new_meta = tr_meta.copy()
+                new_meta["bbox"] = scaled_box
+                scaled_tracks[track_id] = new_meta
+
+            annotated_frame = self.annotator.annotate(
+                resized_frame, scaled_detections, scaled_tracks
+            )
 
             self.display.update(
-                frame=display_frame,
+                frame=annotated_frame,
                 tracks=tracks,
                 hands=hands,
                 evals=evals,

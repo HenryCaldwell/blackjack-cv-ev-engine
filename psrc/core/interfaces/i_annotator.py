@@ -1,5 +1,7 @@
+import numpy as np
+
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List
+from typing import Any, Dict, Tuple
 
 
 class IAnnotator(ABC):
@@ -14,17 +16,18 @@ class IAnnotator(ABC):
     def annotate(
         self,
         frame: Any,
-        raw_boxes: List[List[float]],
-        tracked_cards: Dict[int, Dict[str, Any]],
+        detections: Dict[Tuple[int, int, int, int], Dict[str, Any]],
+        tracks: Dict[int, Dict[str, Any]],
     ) -> Any:
         """
-        Annotate a video frame with tracked card information.
+        Annotate a video frame with detection and track data.
 
         Parameters:
           frame (Any): The image frame to annotate.
-          raw_boxes (List[List[float]]): A list of bounding boxes representing detected card regions.
-          tracked_cards (Dict[int, Dict[str, Any]]): A dictionary mapping track numbers to card information (e.g.,
-          bbox, label, state).
+          detections (Dict[Tuple[int, int, int, int], Dict[str, Any]]): A dictionary mapping detection boxes to
+          detection metadata.
+          tracks (Dict[int, Dict[str, Any]]): A dictionary mapping track numbers to card information
+          (e.g., bbox, label, state).
 
         Returns:
           Any: The annotated video frame.

@@ -7,7 +7,7 @@ from psrc.evaluation.card_deck import CardDeck
 from psrc.detection.card_detector import CardDetector
 from psrc.detection.card_tracker import CardTracker
 from psrc.config.config_manager import ConfigManager
-from psrc.annotation.cv_annotator import CVAnnotator
+from psrc.annotation.mpl_annotator import MPLAnnotator
 from psrc.video.cv_video_stream import CVVideoStream
 from psrc.evaluation.ev_calculator_wrapper import EVCalculatorWrapper
 from psrc.evaluation.hand_evaluator import HandEvaluator
@@ -53,14 +53,11 @@ def main() -> None:
 
     hand_evaluator = HandEvaluator(deck=deck, ev_calculator=ev_calculator)
 
-    annotator = CVAnnotator(
-        confirmed_color=tuple(settings.confirmed_color),
-        tentative_color=tuple(settings.tentative_color),
-        font_scale=settings.font_scale,
-        thickness=settings.thickness,
-    )
+    annotator = MPLAnnotator()
 
-    display = HybridDisplay(window_name=settings.window_name)
+    display = HybridDisplay(
+        window_name=settings.window_name, window_frame_size=settings.window_frame_size
+    )
 
     # Core Engine
     engine = AnalysisEngine(
@@ -74,7 +71,7 @@ def main() -> None:
         display=display,
         inference_interval=settings.inference_interval,
         inference_frame_size=tuple(settings.inference_frame_size),
-        display_frame_size=tuple(settings.display_frame_size),
+        annotation_frame_size=tuple(settings.annotation_frame_size),
     )
 
     # Engine Thread

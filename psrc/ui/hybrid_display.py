@@ -50,15 +50,23 @@ class HybridDisplay(IDisplay):
         ("COUNT", "center", 49),
     ]
 
-    def __init__(self, window_name: str = "Blackjack CV"):
+    def __init__(
+        self,
+        window_name: str = "Blackjack CV EVN Engine",
+        window_frame_size: Tuple[int, int] = (1280, 720),
+    ) -> None:
         """
         Initialize the HybridDisplay with an OpenCV window and empty state.
 
         Parameters:
           window_name (str): The name of the OpenCV window.
+          window_frame_size (Tuple[int, int]): The resolution for the display window.
         """
         self.window_name = window_name
-        cv2.namedWindow(self.window_name, cv2.WINDOW_NORMAL)
+        self.w, self.h = window_frame_size
+
+        cv2.namedWindow(self.window_name, cv2.WINDOW_AUTOSIZE)
+        cv2.resizeWindow(self.window_name, self.w, self.h)
 
         self._lock = Lock()
         self._frame: Optional[Any] = None
@@ -204,7 +212,8 @@ class HybridDisplay(IDisplay):
                     deck = self._deck.copy()
 
                 if frame is not None:
-                    cv2.imshow(self.window_name, frame)
+                    display_frame = cv2.resize(frame, (self.w, self.h))
+                    cv2.imshow(self.window_name, display_frame)
 
                 if not self.process_events():
                     break
