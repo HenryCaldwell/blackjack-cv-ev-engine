@@ -1,25 +1,24 @@
 from abc import ABC, abstractmethod
+
 from typing import Any, Dict
 
 
 class IHandTracker(ABC):
     """
-    Interface for tracking and grouping cards into blackjack hands.
+    Interface for grouping tracked cards into blackjack hands.
 
-    This interface defines a method for updating hand information by grouping detected cards and calculating the
-    corresponding hand scores.
+    This interface defines a contract for updating hand information based on tracking information.
     """
 
     @abstractmethod
-    def update(self, detections: Dict[int, Dict[str, Any]]) -> Dict[str, Any]:
+    def update(self, tracks: Dict[int, Dict[str, Any]]) -> Dict[str, Dict[str, Any]]:
         """
-        Update the hand tracker with new card detections and group them into hands.
+        Update hands using new card tracks.
 
         Parameters:
-          detections (Dict[int, Dict[str, Any]]): A dictionary mapping track IDs to detection details.
+            tracks (Dict[int, Dict[str, Any]]): A mapping of track IDs to their tracking information.
 
         Returns:
-          Dict[str, Any]: A dictionary mapping hand identifiers (as strings) to their hand details (e.g., cards,
-          score, boxes).
+            Dict[str, Dict[str, Any]]: A mapping of hand IDs to their hand information.
         """
         pass

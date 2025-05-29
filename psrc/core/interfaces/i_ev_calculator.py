@@ -1,13 +1,14 @@
 from abc import ABC, abstractmethod
+
 from typing import Dict, List
 
 
 class IExpectedValueCalculator(ABC):
     """
-    Interface for calculating expected values (EV) of blackjack actions.
+    Interface for calculating expected values of blackjack actions.
 
-    This interface defines methods to compute the EV for standing, hitting, doubling, splitting, and surrendering
-    based on the current deck and hands.
+    This interface defines a contract for calculating expected values for standing, hitting, doubling,
+    splitting, and surrendering based on deck and hand compositions.
     """
 
     @abstractmethod
@@ -15,15 +16,15 @@ class IExpectedValueCalculator(ABC):
         self, deck: Dict[int, int], player_hand: List[int], dealer_hand: List[int]
     ) -> float:
         """
-        Compute the expected value when the player stands.
+        Calculate the expected value when the player stands.
 
         Parameters:
-          deck (Dict[int, int]): Mapping of card labels to remaining counts.
-          player_hand (List[int]): List of card labels in the player's hand.
-          dealer_hand (List[int]): List of card labels in the dealer's hand.
+            deck (Dict[int, int]): A mapping of card labels to remaining counts.
+            player_hand (List[int]): A list of card labels in the player's hand.
+            dealer_hand (List[int]): A list of card labels in the dealer's hand.
 
         Returns:
-          float: The expected value (EV) for the stand decision.
+            float: The expected value for the stand decision.
         """
         pass
 
@@ -32,15 +33,15 @@ class IExpectedValueCalculator(ABC):
         self, deck: Dict[int, int], player_hand: List[int], dealer_hand: List[int]
     ) -> float:
         """
-        Compute the expected value when the player hits.
+        Calculate the expected value when the player hits.
 
         Parameters:
-          deck (Dict[int, int]): Mapping of card labels to remaining counts.
-          player_hand (List[int]): List of card labels in the player's hand.
-          dealer_hand (List[int]): List of card labels in the dealer's hand.
+            deck (Dict[int, int]): A mapping of card labels to remaining counts.
+            player_hand (List[int]): A list of card labels in the player's hand.
+            dealer_hand (List[int]): A list of card labels in the dealer's hand.
 
         Returns:
-          float: The expected value (EV) for the hit decision.
+            float: The expected value for the hit decision.
         """
         pass
 
@@ -49,15 +50,15 @@ class IExpectedValueCalculator(ABC):
         self, deck: Dict[int, int], player_hand: List[int], dealer_hand: List[int]
     ) -> float:
         """
-        Compute the expected value when the player doubles.
+        Calculate the expected value when the player doubles.
 
         Parameters:
-          deck (Dict[int, int]): Mapping of card labels to remaining counts.
-          player_hand (List[int]): List of card labels in the player's hand.
-          dealer_hand (List[int]): List of card labels in the dealer's hand.
+            deck (Dict[int, int]): A mapping of card labels to remaining counts.
+            player_hand (List[int]): A list of card labels in the player's hand.
+            dealer_hand (List[int]): A list of card labels in the dealer's hand.
 
         Returns:
-          float: The expected value (EV) for the double decision.
+            float: The expected value for the double decision.
         """
         pass
 
@@ -66,15 +67,15 @@ class IExpectedValueCalculator(ABC):
         self, deck: Dict[int, int], player_hand: List[int], dealer_hand: List[int]
     ) -> float:
         """
-        Compute the expected value when the player splits.
+        Calculate the expected value when the player splits.
 
         Parameters:
-          deck (Dict[int, int]): Mapping of card labels to remaining counts.
-          player_hand (List[int]): List of card labels in the player's hand.
-          dealer_hand (List[int]): List of card labels in the dealer's hand.
+            deck (Dict[int, int]): A mapping of card labels to remaining counts.
+            player_hand (List[int]): A list of card labels in the player's hand.
+            dealer_hand (List[int]): A list of card labels in the dealer's hand.
 
         Returns:
-          float: The expected value (EV) for the split decision.
+            float: The expected value for the split decision.
         """
         pass
 
@@ -83,14 +84,14 @@ class IExpectedValueCalculator(ABC):
         self, deck: Dict[int, int], player_hand: List[int], dealer_hand: List[int]
     ) -> float:
         """
-        Compute the expected value when the player surrenders.
+        Calculate the expected value when the player surrenders.
 
         Parameters:
-          deck (Dict[int, int]): Mapping of card labels to remaining counts.
-          player_hand (List[int]): List of card labels in the player's hand.
-          dealer_hand (List[int]): List of card labels in the dealer's hand.
+            deck (Dict[int, int]): A mapping of card labels to remaining counts.
+            player_hand (List[int]): A list of card labels in the player's hand.
+            dealer_hand (List[int]): A list of card labels in the dealer's hand.
 
         Returns:
-          float: The expected value (EV) for the surrender decision.
+            float: The expected value for the surrender decision.
         """
         pass

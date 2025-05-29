@@ -1,22 +1,22 @@
 from abc import ABC, abstractmethod
+
 from typing import Any
 
 
 class IFrameReader(ABC):
     """
-    Interface for ingesting frames from a video source.
+    Interface for reading frames from a video source.
 
-    This interface specifies methods for retrieving frames from a video source, querying the sources frame rate,
-    and releasing resources.
+    This interface defines a contract for retrieving frames, querying frame rate, and releasing resources.
     """
 
     @abstractmethod
     def read_frame(self) -> Any:
         """
-        Read and return the next frame from the video stream.
+        Read the next frame from the video source.
 
         Returns:
-          Any: The next video frame, or None if no frame is available.
+            Any: The next frame, or None if no frame is available.
         """
         pass
 
@@ -26,13 +26,16 @@ class IFrameReader(ABC):
         Query the frame rate of the video source.
 
         Returns:
-          float: Frames per second provided by the source.
+            float: The frames per second of the source.
         """
         pass
 
     @abstractmethod
     def release(self) -> None:
         """
-        Release the video stream and any associated resources.
+        Release the video source and perform cleanup.
+
+        Returns:
+            None
         """
         pass

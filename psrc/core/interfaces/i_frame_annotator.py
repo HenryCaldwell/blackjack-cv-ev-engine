@@ -1,35 +1,32 @@
-import numpy as np
-
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Tuple
+
+from typing import Any, Dict
 
 
 class IFrameAnnotator(ABC):
     """
-    Interface for annotating video frames with detection information.
+    Interface for annotating frames with detection information.
 
-    This interface defines the contract for annotators that overlay information (e.g., bbox, label, state) on
-    video frames based on detected card regions and associated data.
+    This interface defines a contract for annotating a frame with bounding boxes, labels, and states.
     """
 
     @abstractmethod
     def annotate(
         self,
         frame: Any,
-        detections: Dict[Tuple[int, int, int, int], Dict[str, Any]],
+        detections: Dict[tuple, Dict[str, Any]],
         tracks: Dict[int, Dict[str, Any]],
     ) -> Any:
         """
-        Annotate a video frame with detection and track data.
+        Annotate a frame with detection and tracking information.
 
         Parameters:
-          frame (Any): The image frame to annotate.
-          detections (Dict[Tuple[int, int, int, int], Dict[str, Any]]): A dictionary mapping detection boxes to
-          detection metadata.
-          tracks (Dict[int, Dict[str, Any]]): A dictionary mapping track numbers to card information
-          (e.g., bbox, label, state).
+            frame (Any): The frame to annotate.
+            detections (Dict[tuple, Dict[str, Any]]): A mapping of bounding box coordinates to their detection
+            information.
+            tracks (Dict[int, Dict[str, Any]]): A mapping of track IDs to their tracking information.
 
         Returns:
-          Any: The annotated video frame.
+            Any: The annotated frame.
         """
         pass

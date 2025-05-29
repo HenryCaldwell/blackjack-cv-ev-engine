@@ -5,8 +5,7 @@ class ICardDeck(ABC):
     """
     Interface for managing a blackjack card deck.
 
-    This interface defines methods for updating the deck by adding or removing cards, which is useful for tracking
-    the current state of play.
+    This interface defines a contract for updating a card deck by adding or removing cards.
     """
 
     @abstractmethod
@@ -15,10 +14,10 @@ class ICardDeck(ABC):
         Add a card to the deck.
 
         Parameters:
-          card_label (int): The numeric label of the card to be added.
+            card_label (int): The numeric label of the card to be added.
 
         Returns:
-          bool: True if the card was successfully added, False otherwise.
+            bool: True if the card was successfully added, False otherwise.
         """
         pass
 
@@ -28,9 +27,9 @@ class ICardDeck(ABC):
         Remove a card from the deck.
 
         Parameters:
-          card_label (int): The numeric label of the card to be removed.
+            card_label (int): The numeric label of the card to be removed.
 
         Returns:
-          bool: True if the card was successfully removed, False otherwise.
+            bool: True if the card was successfully removed, False otherwise.
         """
         pass
