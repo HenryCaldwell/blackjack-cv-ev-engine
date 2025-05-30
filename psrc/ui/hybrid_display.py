@@ -1,7 +1,8 @@
-import cv2
-from threading import Lock
 from typing import Any, Dict, List, Optional, Tuple
 
+from threading import Lock
+
+import cv2
 from rich.console import Console, Group
 from rich.live import Live
 from rich.table import Table
@@ -11,9 +12,11 @@ from psrc.core.interfaces.i_display import IDisplay
 
 class HybridDisplay(IDisplay):
     """
-    HybridDisplay implements the IDisplay interface for displaying frames and evaluation data.
+    HybridDisplay is an implementation of the IDisplay interface.
 
-    It displays live video in an OpenCV window and renders three console tables using Rich.
+    This implementation uses OpenCV to render video frames in a window and Rich Live/Table to display hand
+    info, expected-value recommendations, and deck composition alongside the video. Internal state updates are
+    thread-safe via a Lock.
     """
 
     RANKS: List[str] = [
@@ -52,15 +55,15 @@ class HybridDisplay(IDisplay):
 
     def __init__(
         self,
-        window_name: str = "Blackjack CV EVN Engine",
+        window_name: str = "Blackjack CV EV Engine",
         window_frame_size: Tuple[int, int] = (1280, 720),
     ) -> None:
         """
-        Initialize the HybridDisplay with an OpenCV window and empty state.
+        Initialize HybridDisplay with an OpenCV window and Rich console.
 
         Parameters:
-          window_name (str): The name of the OpenCV window.
-          window_frame_size (Tuple[int, int]): The resolution for the display window.
+            window_name (str): The title for the OpenCV window.
+            window_frame_size (Tuple[int,int]): The width and height for display frames.
         """
         self.window_name = window_name
         self.w, self.h = window_frame_size
@@ -89,15 +92,19 @@ class HybridDisplay(IDisplay):
         deck: Dict[int, int] = None,
     ) -> None:
         """
-        Update any subset of the display’s state under the thread lock.
+        Update any subset of the display state.
+
+        This implementation acquires a lock and updates any provided subset of frame, detections, tracks,
+        hands, evals, and deck.
 
         Parameters:
-          frame (Any, optional): The latest video frame to display.
-          detections (Dict[tuple, Dict[str, Any]], optional): Raw detection boxes mapped to detection info.
-          tracks (Dict[int, Dict[str, Any]], optional): Tracked card IDs mapped to bbox/label/state.
-          hands (Dict[str, Any], optional): Grouped hand information.
-          evals (Dict[str, Any], optional): Expected value results and best actions for each hand.
-          deck (Dict[int, int], optional): Current deck composition as card label count.
+            frame (Any, optional): The frame for display.
+            detections (Dict[Tuple, Dict[str, Any]], optional): A mapping of bounding box coordinates to their
+            detection information.
+            tracks (Dict[int, Dict[str, Any]], optional): A mapping of track IDs to their tracking information.
+            hands (Dict[str, Dict[str, Any]], optional): A mapping of hand IDs to their hand information.
+            evals (Dict[str, Dict[str, Any]], optional): A mapping of hand IDs to their evaluation information.
+            deck (Dict[int, int], optional): A mapping of card label to count.
         """
         with self._lock:
             if frame is not None:
@@ -115,27 +122,34 @@ class HybridDisplay(IDisplay):
 
     def process_events(self) -> bool:
         """
-        Pump OpenCV GUI events and check if the window is still visible.
+        Process UI events and determine whether the display should continue running.
+
+        This implementation checks if the OpenCV window is still visible.
 
         Returns:
-          bool: False if the window has been closed (signal to stop), True otherwise.
+            bool: True to keep running, False otherwise.
         """
         cv2.waitKey(1)
         return cv2.getWindowProperty(self.window_name, cv2.WND_PROP_VISIBLE) >= 1
 
     def release(self) -> None:
         """
-        Release the display and any associated resources.
+        Release all display resources and perform cleanup.
+
+        This implementation destroys all OpenCV windows.
         """
         cv2.destroyAllWindows()
 
     def _build_table(self, title: str, columns: List[Tuple[str, str, int]]) -> Table:
         """
-        Create a Rich Table with the given title and column definitions.
+        Build a Rich Table with the given headers.
 
         Parameters:
-          title (str): Table title shown at the top.
-          columns (List[Tuple[str,str,int]]): List of (header, justify, min_width).
+            title (str): Table title.
+            columns (List[Tuple[str, str, int]]): List of header specs.
+
+        Returns:
+            Table: A Rich Table ready for rows.
         """
         tbl = Table(title=title, title_justify="center")
         for header, justify, width in columns:
@@ -144,8 +158,10 @@ class HybridDisplay(IDisplay):
 
     def _make_hand_table(self) -> Table:
         """
-        Build and populate the hand information table:
-          Hand ID | Cards (formatted) | Score (colored green/red).
+        Create the hand-info table for Rich display.
+
+        Returns:
+            Table: A Rich Table with one row per hand, showing ID, cards, and colored score.
         """
         tbl = self._build_table("HAND INFORMATION", self.HAND_COLUMNS)
         for hid, info in self._hands.items():
@@ -162,9 +178,10 @@ class HybridDisplay(IDisplay):
 
     def _make_ev_table(self) -> Table:
         """
-        Build and populate the EV table:
-          Hand | STD | HIT | DBL | SPL | SUR | BEST
-        with values colored by positive/negative.
+        Create the expected-value table for Rich display.
+
+        Returns:
+            Table: A Rich Table with one row per hand, containing EV columns and best action.
         """
         tbl = self._build_table("EXPECTED VALUE INFORMATION", self.EV_COLUMNS)
         for hand, res in self._evals.items():
@@ -189,8 +206,10 @@ class HybridDisplay(IDisplay):
 
     def _make_deck_table(self) -> Table:
         """
-        Build and populate the deck composition table:
-          Card label | Remaining count.
+        Create the deck-composition table for Rich display.
+
+        Returns:
+            Table: A Rich Table listing each card label and its remaining count.
         """
         tbl = self._build_table("DECK COMPOSITION", self.DECK_COLUMNS)
         for label in sorted(self._deck.keys()):
@@ -200,7 +219,13 @@ class HybridDisplay(IDisplay):
 
     def start(self) -> None:
         """
-        Main display loop (must run on the main thread). Continues until the window is closed.
+        Run the live display loop until the window closes.
+
+        This method opens a Rich Live context, resizes and shows frames when updated, updates Rich tables
+        whenever state is updated.
+
+        Returns:
+            None
         """
         prev_hands, prev_evals, prev_deck = None, None, None
         with Live(console=self.console, screen=False, auto_refresh=True) as live:
