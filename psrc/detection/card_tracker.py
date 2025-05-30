@@ -96,7 +96,7 @@ class CardTracker(ICardTracker):
         on_confirm_callback: Optional[Callable[[Track], None]] = None,
     ) -> None:
         """
-        Initialize CardTracker with parameters and an optional confirmation callback.
+        Initialize CardTracker with tracking parameters and an optional confirmation callback.
 
         A callback can be provided to react whenever a track is confirmed.
 
