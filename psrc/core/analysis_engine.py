@@ -1,18 +1,19 @@
-import cv2
+from typing import Any, Optional, Tuple
+
 import threading
 import time
 import queue
-from typing import Any, Optional, Tuple
 
-from psrc.core.interfaces.i_frame_annotator import IFrameAnnotator
+import cv2
+
 from psrc.core.interfaces.i_card_deck import ICardDeck
 from psrc.core.interfaces.i_card_detector import ICardDetector
 from psrc.core.interfaces.i_card_tracker import ICardTracker
+from psrc.core.interfaces.i_display import IDisplay
+from psrc.core.interfaces.i_frame_annotator import IFrameAnnotator
+from psrc.core.interfaces.i_frame_reader import IFrameReader
 from psrc.core.interfaces.i_hand_tracker import IHandTracker
 from psrc.core.interfaces.i_hand_evaluator import IHandEvaluator
-from psrc.core.interfaces.i_display import IDisplay
-from psrc.core.interfaces.i_frame_reader import IFrameReader
-
 from psrc.debugging.logger import setup_logger
 
 logger = setup_logger(__name__)
@@ -20,11 +21,11 @@ logger = setup_logger(__name__)
 
 class AnalysisEngine:
     """
-    Coordinates the end-to-end blackjack CV evaluation by running three worker threads. The capture thread
-    continuously reads video frames and enqueues them; the analysis thread wakes at a fixed interval to dequeue
-    a frame, perform card detection, tracking, hand grouping, and EV calculations, then enqueues the results;
-    the display thread dequeues processed data, annotates the frame, and updates the UI. Thread-safe queues are
-    used to transfer data between threads.
+    AnalysisEngine coordinates the end-to-end blackjack CV evaluation by running three worker threads. The
+    capture thread continuously reads frames and enqueues them; the analysis thread wakes at a fixed interval
+    to dequeue a frame, perform card detection, tracking, hand grouping, and EV calculations, then enqueues the
+    results; the display thread dequeues processed data, annotates the frame, and updates the UI. Thread-safe
+    queues are used to transfer data between threads.
     """
 
     def __init__(
@@ -42,7 +43,7 @@ class AnalysisEngine:
         annotation_frame_size: Tuple[int, int] = (1280, 720),
     ) -> None:
         """
-         Initialize the AnalysisEngine with all the components required for the video processing workflow.
+        Initialize AnalysisEngine with all pipeline components and settings.
 
         Parameters:
           video_reader (IVideoStreamReader): The video reader instance for retrieving frames.
@@ -84,6 +85,9 @@ class AnalysisEngine:
     def _capture_loop(self) -> None:
         """
         Continuously read frames from the video source at its native FPS and enqueue the latest frame.
+
+        Returns:
+            None
         """
         logger.info("Starting Capture Thread")
 
@@ -105,8 +109,11 @@ class AnalysisEngine:
 
     def _analysis_loop(self) -> None:
         """
-        At fixed intervals, pull the latest raw frame, run detection, tracking, hand grouping, and EV evaluation,
-        then enqueue the processed frame and metadata for display.
+        Pull the latest raw frame, run detection, tracking, hand grouping, and EV evaluation, then enqueue the
+        processed frame and metadata for display.
+
+        Returns:
+            None
         """
         logger.info("Starting Analysis Thread")
 
@@ -148,6 +155,9 @@ class AnalysisEngine:
     def _display_loop(self) -> None:
         """
         Pull processed frames, annotate them, render via display, and exit on user input.
+
+        Returns:
+            None
         """
         logger.info("Starting Display Thread")
 
@@ -224,6 +234,9 @@ class AnalysisEngine:
         Parameters:
           q (queue.Queue): The target queue.
           item (Any): The element to enqueue.
+
+        Returns:
+            None
         """
         try:
             q.put(item, timeout=0.01)
@@ -237,6 +250,9 @@ class AnalysisEngine:
 
         Parameters:
           q (queue.Queue): The target queue.
+
+        Returns:
+            Any: The dequeued item, or None if the queue was empty.
         """
         try:
             return q.get(timeout=0.01)
@@ -246,6 +262,9 @@ class AnalysisEngine:
     def start(self) -> None:
         """
         Start capture, analysis, and display threads. Blocks all threads until completion.
+
+        Returns:
+            None
         """
         logger.info("Starting AnalysisEngine")
 
