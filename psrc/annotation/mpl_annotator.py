@@ -1,27 +1,29 @@
+from typing import Any, Dict
+
 import cv2
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
-
-matplotlib.use("Agg")
-
 from matplotlib.patches import Rectangle
 from matplotlib.backends.backend_agg import FigureCanvasAgg
-from typing import Any, Dict
 
 from psrc.core.interfaces.i_frame_annotator import IFrameAnnotator
+
+matplotlib.use("Agg")
 
 
 class MPLAnnotator(IFrameAnnotator):
     """
-    MPLAnnotator implements the IAnnotator interface for rendering tracked bounding boxes and labels onto video
-    frames.
+    MPLAnnotator is an implementation of the IFrameAnnotator interface.
+
+    This implementation uses Matplotlib’s Agg backend to draw detection and track overlays on frames. Bounding
+    boxes are colored by track state, and labels are rendered with proportional thickness and font size.
 
     Attributes:
-      BOX_THICKNESS_RATIO (float): Relative thickness of box edges versus frame height.
-      FONT_SIZE_RATIO   (float): Relative font size versus frame height.
-      COLOR_CONFIRMED   (Tuple[float, float, float]): RGB color for confirmed tracks.
-      COLOR_TENTATIVE   (Tuple[float, float, float]): RGB color for tentative tracks.
+        _BOX_THICKNESS_RATIO (float): The relative thickness of box edges versus frame height.
+        _FONT_SIZE_RATIO (float): The relative font size versus frame height.
+        _CONFIRMED_COLOR (Tuple[float, float, float]): The RGB color for confirmed tracks.
+        _TENTATIVE_COLOR (Tuple[float, float, float]): The RGB color for tentative tracks.
     """
 
     _BOX_THICKNESS_RATIO = 0.003
@@ -37,20 +39,20 @@ class MPLAnnotator(IFrameAnnotator):
         tracks: Dict[int, Dict[str, Any]],
     ) -> np.ndarray:
         """
-        Overlay tracked bounding boxes and labels onto a video frame.
+        Annotate a frame with detection and tracking information.
 
-        Creates an off‐screen Matplotlib canvas matching the input frame size, draws each track’s box and label
-        (only if the box appears in `detections`), and returns the result as a BGR NumPy array.
+        This implementation converts the OpenCV BGR frame to an RGB Matplotlib figure, for each confirmed
+        track draws a colored Rectangle patch and italic bold text showing track ID and label, and converts
+        back to BGR for OpenCV compatibility.
 
         Parameters:
-          frame (np.ndarray): The image frame to annotate.
-          detections (Dict[Tuple[int, int, int, int], Dict[str, Any]]): A dictionary mapping detection boxes to
-          detection metadata.
-          tracks (Dict[int, Dict[str, Any]]): A dictionary mapping track numbers to card information
-          (e.g., bbox, label, state).
+            frame (Any): The frame to annotate.
+            detections (Dict[Tuple, Dict[str, Any]]): A mapping of bounding box coordinates to their detection
+            information.
+            tracks (Dict[int, Dict[str, Any]]): A mapping of track IDs to their tracking information.
 
         Returns:
-          np.ndarray: Annotated image in BGR format with boxes and labels drawn.
+            Any: The annotated frame.
         """
         h, w = frame.shape[:2]
 
