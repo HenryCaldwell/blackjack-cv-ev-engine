@@ -26,7 +26,9 @@ class HandEvaluator(IHandEvaluator):
         self.deck = deck
         self.ev_calc = ev_calculator
 
-    def evaluate_hands(self, hands: Dict[str, Any]) -> Dict[str, Any]:
+    def evaluate_hands(
+        self, hands: Dict[str, Dict[str, Any]]
+    ) -> Dict[str, Dict[str, Any]]:
         """
         Evaluate each player's hand and select the optimal action.
 
