@@ -1,56 +1,53 @@
 from typing import Any, Dict
 
-from psrc.core.interfaces.i_hand_evaluator import IHandEvaluator
 from psrc.core.interfaces.i_card_deck import ICardDeck
 from psrc.core.interfaces.i_ev_calculator import IExpectedValueCalculator
+from psrc.core.interfaces.i_hand_evaluator import IHandEvaluator
 
 
 class HandEvaluator(IHandEvaluator):
     """
-    HandEvaluator implements the IHandEvaluator interface for evaluating grouped blackjack hands and determining
-    optimal actions.
+    HandEvaluator is an implementation of the IHandEvaluator interface.
 
-    Uses an ICardDeck to access the current deck state and an EVCalculator to compute expected values for stand,
-    hit, double, split, and surrender.
+    This implementation queries the current deck state and uses an EV calculator to compute stand, hit, double,
+    split, and surrender values for each player hand, then selects the highest expected value action.
     """
 
     def __init__(
         self, deck: ICardDeck, ev_calculator: IExpectedValueCalculator
     ) -> None:
         """
-        Initialize the HandEvaluator with a deck and EV calculator.
+        Initialize HandEvaluator with a deck and an EV calculator.
 
         Parameters:
-          deck (ICardDeck): The deck manager providing current card counts.
-          ev_calculator (IEVCalculator): The calculator for computing EVs.
+            deck (ICardDeck): The deck for current card counts.
+            ev_calculator (IExpectedValueCalculator): The calculator for EV computations.
         """
         self.deck = deck
         self.ev_calc = ev_calculator
 
-    def evaluate_hands(self, hands_info: Dict[str, Any]) -> Dict[str, Any]:
+    def evaluate_hands(self, hands: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Evaluate each player's hand and determine the optimal action.
+        Evaluate each player's hand and select the optimal action.
 
-        This method iterates through provided hands, computes EVs for stand, hit, double, split, and surrender
-        using the EVCalculator, identifies the action with the highest EV for each player hand, and returns a
-        mapping of hand IDs to their results.
+        This implementation skips evaluation if no dealer hand is present, for each non-dealer hand computes
+        EVs for stand, hit, double, split, and surrender by calling the EV calculator, and records the best
+        action.
 
         Parameters:
-          hands_info (Dict[str, Any]): A dictionary mapping hand identifiers to their details (e.g., cards, score,
-          boxes).
+            hands (Dict[str, Dict[str, Any]]): A mapping of hand IDs to their hand information.
 
         Returns:
-          Dict[str, Any]: A dictionary of evaluation results, mapping hand identifiers to a structure containing
-          EVs for each action and the best action.
+            Dict[str, Dict[str, Any]]: A mapping of hand IDs to their evaluation information.
         """
         results: Dict[str, Any] = {}
-        dealer_cards = hands_info.get("Dealer", {}).get("cards", [])
+        dealer_cards = hands.get("Dealer", {}).get("cards", [])
 
         if not dealer_cards:
             return {}
 
         # Compute EVs for each player hand, skipping over the dealer
-        for hand_id, info in hands_info.items():
+        for hand_id, info in hands.items():
             if hand_id == "Dealer":
                 continue
 
