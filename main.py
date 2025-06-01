@@ -12,7 +12,7 @@ from psrc.input.cv_video_stream import CVVideoStream
 from psrc.evaluation.ev_calculator_wrapper import EVCalculatorWrapper
 from psrc.evaluation.hand_evaluator import HandEvaluator
 from psrc.detection.hand_tracker import HandTracker
-from psrc.ui.hybrid_display import HybridDisplay
+from psrc.display.hybrid_display import HybridDisplay
 
 os.environ["YOLO_VERBOSE"] = "0"
 logging.getLogger("psrc.core.analysis_engine").setLevel(logging.WARNING)

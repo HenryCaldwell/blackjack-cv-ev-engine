@@ -2,28 +2,31 @@
 
 ## Project Description
 
-The Blackjack Computer Vision Evaluation Engine is a modular application that integrates real-time video processing with blackjack game analysis. It uses computer vision techniques to detect and track playing cards in a video stream, groups them into blackjack hands, and calculates the expected value (EV) of various blackjack actions (stand, hit, double, and split).
-
-**Key Features:**
-
-- **Real-Time Card Detection:** Uses a YOLO-based model with OpenCV to detect playing cards from video frames.
-- **Card Tracking and Hand Grouping:** Tracks detections across frames and groups them into dealer and player hands using IoU algorithms.
-- **Blackjack EV Calculations:** Computes the expected value of different actions using a recursive, memoized Java EV calculator.
-- **Seamless Integration:** Combines Python’s rapid prototyping and computer vision capabilities with Java’s performance for EV computations.
-- **Modular Design:** Organized into clear components that adhere to defined interfaces for easy maintenance and future expansion.
-
-**Technologies Used:**
-
-- **Python:** For video processing, computer vision (OpenCV), detection (YOLO via ultralytics), and overall pipeline orchestration.
-- **Java:** For the EV calculation engine, using Maven for build management.
-- **JPype:** To bridge Python and Java, allowing the application to leverage Java’s performance within a Python environment.
+A real-time computer vision system for evaluating optimal blackjack decisions. This application uses YOLO for card detection, a custom tracking and hand grouping pipeline, and a Java-based expected value calculator to evaluate stand, hit, double, split, or surrender actions. Results are displayed as an annotated video alongside a Rich-powered dashboard of hand info, expected values, and deck composition.
 
 ## Table of Contents
 
-1. [Project Description](#project-description)
-2. [Installation and Setup](#installation-and-setup)
-3. [Usage](#usage)
-4. [File Structure](#file-structure)
+- [Project Description](#project-description)
+  - [Key Features](#key-features)
+- [Installation and Setup](#installation-and-setup)
+  - [Prerequisites](#prerequisites)
+  - [Setup Steps](#setup-steps)
+- [Usage](#usage)
+  - [Run the Application](#run-the-application)
+  - [Terminate the Program](#terminate-the-program)
+  - [Troubleshooting](#troubleshooting)
+- [File Structure](#file-structure)
+- [License](#license)
+
+**Key Features:**
+
+- **Card Detection:** Utilizes an Ultralytics YOLO model to detect playing cards in each video frame with high accuracy and low latency.
+- **Card Tracking:** Employs a Hungarian-algorithm–based tracker to maintain consistent card tracks across frames, confirming and pruning tracks automatically.
+- **Hand Grouping:** Clusters detected cards into dealer and player hands based on bounding-box overlap, scoring each hand according to blackjack rules.
+- **Expected Value Computation:** Integrates a Java-based expected value calculator (via JPype) to compute expected values for stand, hit, double, split, and surrender decisions on the fly.
+- **Multi-Threaded Processing Pipeline:** Separates capture, analysis, and display into dedicated threads to ensure smooth video input, uninterrupted inference, and responsive UI updates.
+- **Live Annotated Display:** Renders video frames with Matplotlib overlays (bounding boxes and labels) and a Rich-powered sidebar showing hand details, expected value breakdowns, and remaining deck composition simultaneously.
+- **Flexible Configuration:** All thresholds, model paths, blackjack rules, and display settings are exposed in a single YAML file, making it easy to tweak detection parameters, deck counts, and other blackjack rules without touching code.
 
 ## Installation and Setup
 
@@ -32,13 +35,7 @@ The Blackjack Computer Vision Evaluation Engine is a modular application that in
 - **Python 3.8+**
 - **Java JDK 11+**
 - **Maven**
-- **Required Python Packages:**
-  - JPype (jpype1)
-  - NumPy (numpy)
-  - OpenCV (opencv-python)
-  - PyYAML (pyyaml)
-  - SciPy (scipy)
-  - Ultralytics YOLO (ultralytics)
+- **Pretrained YOLO weights**
 
 ### Setup Steps
 
@@ -55,89 +52,93 @@ cd blackjack-cv-ev-engine
 pip install -r requirements.txt
 ```
 
-3. **Build the Java EV Calculator:**
+3. **Build the Java Expected Value Calculator:**
 
 ```bash
-cd jsrc/evaluation
 mvn clean package
 ```
 
-This creates a JAR (e.g., `target/blackjack-ev-calculator-1.0.0.jar`).
+4. **Verify the YOLO Weights:**
 
-4. **Configure the Application:**
+- By default, config.yaml expects the YOLO weights file at resources/detection_weights.pt.
+
+5. **Review and Adjust Configuration:**
 
 - Edit `config.yaml` at the project root to set:
-  - Paths to the YOLO weights and test video.
-  - Inference settings.
-  - Blackjack rules and deck settings.
+  - Paths to the YOLO weights and video source.
   - Java EV calculator JAR and class paths.
+  - Any thresholds, frame sizes, or blackjack rules as needed.
 
 ## Usage
 
-### Running the Application
-
-1. **Ensure Configuration is Correct:**  
-   Verify that `config.yaml` contains the correct file paths and settings for your environment.
-
-2. **Start the Application:**
+1. **Run the Application:**
 
 ```bash
 python main.py
 ```
 
-3. **Interact with the Application:**
-   - An OpenCV window will open showing video frames annotated with bounding boxes and EV information.
-   - The console will display logging information regarding card detection, tracking, and evaluation.
-   - Press `q` on the display window to quit the application.
+- Three threads start automatically:
+  - Capture thread — reads frames from webcam or video file.
+  - Analysis thread — performs card detection, tracking, hand grouping, and EV evaluation.
+  - Display thread — shows annotated frames in an OpenCV window plus Rich live tables.
 
-### Additional Notes
+2. **Terminate the Program:**
 
-- **Video Source:**  
-  Toggle between using a video file and a webcam by setting `use_webcam` in `config.yaml`.
-- **Debugging and Logging:**  
-  The project uses a custom logger (`psrc/debugging/logger.py`) to record runtime events, which helps in troubleshooting and further development.
+- Close the OpenCV window to stop all threads and exit.
+
+3. **Troubleshooting:**
+
+- JPype "JVM not found" errors: Ensure JAVA_HOME points to a Java 11+ installation.
+- "Unable to open video source": Verify video_path in config.yaml, or set use_webcam: true with the correct webcam_index.
+- YOLO model loading issues: Confirm yolo_path references a valid Ultralytics-compatible .pt file.
+- Python dependency conflicts: Make sure the virtual environment is activated before running pip install -r requirements.txt.
 
 ## File Structure
 
 ```
 .
-├── config.yaml                     # Contains the main configuration settings for detection, display, and blackjack rules
-├── main.py                         # The main entry point for the application
-├── pom.xml                         # Maven configuration for building the Java EV calculator
-├── README.md                       # Contains project documentation and guidelines
-├── requirements.txt                # Lists the required Python dependencies
+├── config.yaml                     # Stores all analysis, detection, display, and blackjack settings.
+├── main.py                         # Initializes components and starts the evaluation engine.
+├── pom.xml                         # Configures Maven to compile and package the Java EV calculator.
+├── requirements.txt                # Lists the Python dependencies for the project.
 ├── jsrc
 │  └── evaluation
-│     ├── ConfigManager.java        # Loads game settings from config.yaml using SnakeYAML
-│     ├── EVCalculator.java         # Implements recursive expected value (EV) calculations for blackjack actions
-│     └── StateKey.java             # Generates unique keys for memoization in EV calculations
+│     ├── ConfigManager.java        # Loads blackjack game settings.
+│     ├── EVCalculator.java         # Calculates expected values for blackjack actions.
+│     └── StateKey.java             # Represents a game state for EV caching.
 ├── psrc
 │  ├── annotation
-│  │  └── cv_annotator.py           # Annotates video frames with detected card and hand details using OpenCV
+│  │  └── cv_annotator.py           # Draws bounding boxes and labels on frames.
 │  ├── config
-│  │  └── config_manager.py         # Loads and parses the YAML configuration for the Python modules
+│  │  └── config_manager.py         # Loads analysis settings.
 │  ├── core
-│  │  ├── analysis_engine.py        # Orchestrates the complete video processing pipeline including detection, tracking, EV calculation, and display
-│  │  └── interfaces                # Contains abstract interfaces defining contracts for various modules (e.g., detector, tracker, display)
+│  │  ├── analysis_engine.py        # Runs capture, analysis, and display loops.
+│  │  └── interfaces
+|  |     ├── i_card_deck.py         # Defines methods for adding/removing cards in a deck.
+|  |     ├── i_card_detector.py     # Defines how to detect cards in a frame.
+|  |     ├── i_card_tracker.py      # Defines how to track cards across frames.
+|  |     ├── i_display.py           # Defines methods for rendering frames and handling UI.
+|  |     ├── i_ev_calculator.py     # Defines methods for computing blackjack EVs.
+|  |     ├── i_frame_annotator.py   # Defines how to annotate video frames.
+|  |     ├── i_frame_reader.py      # Defines how to read frames from a video source.
+|  |     ├── i_hand_evaluator.py    # Defines how to evaluate blackjack hands.
+|  |     └── i_hand_tracker.py      # Defines how to group tracked cards into hands.
 │  ├── debugging
-│  │  └── logger.py                 # Configures and initializes the custom logger
+│  │  └── logger.py                 # Sets up a logger with timestamped output.
 │  ├── detection
-│  │  ├── card_detector.py          # Detects cards in video frames using a YOLO-based model
-│  │  ├── card_tracker.py           # Tracks card detections across frames to maintain continuity
-│  │  └── hand_tracker.py           # Groups detected cards into dealer and player hands and computes their scores
+│  │  ├── card_detector.py          # Runs a YOLO model to detect cards.
+│  │  ├── card_tracker.py           # Matches detections to tracks and manages track states.
+│  │  └── hand_tracker.py           # Groups card tracks into blackjack hands.
+│  ├── display
+│  │  └── hybrid_display.py         # Shows annotated video and related tables side by side.
 │  ├── evaluation
-│  │  ├── card_deck.py              # Manages the blackjack card deck by adding or removing cards
-│  │  ├── ev_calculator_wrapper.py  # Provides a Python wrapper for the Java EV calculator using JPype
-│  │  └── java_conversion_utils.py  # Converts Python data structures to Java-compatible types for EV calculations
-│  ├── ui
-│  │  └── cv_display.py             # Displays video frames and manages user input using OpenCV
-│  └── video
-│     └── cv_video_stream.py        # Captures video frames from a file or webcam using OpenCV
+│  │  ├── card_deck.py              # Manages counts for a multi-deck blackjack deck.
+│  │  ├── ev_calculator_wrapper.py  # Wraps the Java EV calculator via JPype.
+│  │  └── hand_evaluator.py         # Chooses the best blackjack action based on EVs.
+│  └── input
+│     └── cv_video_stream.py        # Reads frames from a video file or webcam.
 ```
 
-## Future Improvements
+## License
 
-- **User Interface Enhancements:** Develop a more robust GUI for better visualization and user interaction.
-- **Extended Game Logic:** Incorporate additional blackjack strategies and rules to further enhance EV analysis.
-- **Performance Optimization:** Refine the recursive EV calculation and improve overall processing speed.
-- **Improved Error Handling:** Enhance logging and add more comprehensive error handling to manage real-time processing issues.
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
