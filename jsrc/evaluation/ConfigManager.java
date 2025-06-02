@@ -15,7 +15,6 @@ import org.yaml.snakeyaml.Yaml;
  */
 public final class ConfigManager {
   public static final double BLACKJACK_ODDS;
-  public static final boolean CAN_SURRENDER;
   public static final boolean DEALER_HITS_ON_SOFT_17;
   public static final boolean DEALER_PEAKS_FOR_21;
   public static final boolean NATURAL_BLACKJACK_SPLITS;
@@ -33,8 +32,6 @@ public final class ConfigManager {
       Map<String, Object> gameSettings = (Map<String, Object>) config.get("analysis_settings");
 
       BLACKJACK_ODDS = ((Number) gameSettings.get("blackjack_odds")).doubleValue();
-
-      CAN_SURRENDER = (Boolean) gameSettings.get("can_surrender");
 
       DEALER_HITS_ON_SOFT_17 = (Boolean) gameSettings.get("dealer_hits_on_soft_17");
       DEALER_PEAKS_FOR_21 = (Boolean) gameSettings.get("dealer_peaks_for_21");
