@@ -166,7 +166,7 @@ class HandTracker(IHandTracker):
 
         return list(groups_dict.values())
 
-    def update(self, tracks: Dict[int, Dict[str, Any]]) -> Dict[str, Any]:
+    def update(self, tracks: Dict[int, Dict[str, Any]]) -> Dict[int, Dict[str, Any]]:
         """
         Update hands using new card tracks.
 
@@ -178,9 +178,9 @@ class HandTracker(IHandTracker):
             tracks (Dict[int, Dict[str, Any]]): A mapping of track IDs to their tracking information.
 
         Returns:
-            Dict[str, Dict[str, Any]]: A mapping of hand IDs to their hand information.
+            Dict[int, Dict[str, Any]]: A mapping of hand IDs to their hand information.
 
-            - Key (str): A hand ID, either "Dealer" or "Player {n}".
+            - Key (int): A unique ID for each hand where 0 is reserved for the dealer.
             - Value (Dict[str, Any]): A dict of hand information.
                 - "cards" (List[int]): The list of card labels in the hand.
                 - "score" (int): The computed blackjack score of the hand.
@@ -208,7 +208,7 @@ class HandTracker(IHandTracker):
             dealer_cards = [labels[idx] for idx in dealer_indices]
             dealer_score = self._score_hand(dealer_cards)
             dealer_boxes = [boxes[idx] for idx in dealer_indices]
-            hands_info["Dealer"] = {
+            hands_info[0] = {
                 "cards": dealer_cards,
                 "score": dealer_score,
                 "boxes": dealer_boxes,
@@ -225,7 +225,7 @@ class HandTracker(IHandTracker):
             player_cards = [labels[idx] for idx in group]
             score = self._score_hand(player_cards)
             hand_boxes = [boxes[idx] for idx in group]
-            hands_info[f"Player {i}"] = {
+            hands_info[i] = {
                 "cards": player_cards,
                 "score": score,
                 "boxes": hand_boxes,

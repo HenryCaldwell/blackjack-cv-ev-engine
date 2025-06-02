@@ -165,6 +165,11 @@ class HybridDisplay(IDisplay):
         """
         tbl = self._build_table("HAND INFORMATION", self.HAND_COLUMNS)
         for hid, info in self._hands.items():
+            if hid == 0:
+                display_id = "Dealer"
+            else:
+                display_id = f"Player {hid}"
+
             cards = [
                 self.RANKS[int(card)] if 0 <= int(card) < len(self.RANKS) else str(card)
                 for card in info.get("cards", [])
@@ -173,7 +178,7 @@ class HybridDisplay(IDisplay):
             score = info.get("score", 0)
             color = "green" if score <= 21 else "red"
             score_str = f"[{color}]{score}[/{color}]"
-            tbl.add_row(hid, display_cards, score_str)
+            tbl.add_row(display_id, display_cards, score_str)
         return tbl
 
     def _make_ev_table(self) -> Table:
@@ -184,7 +189,8 @@ class HybridDisplay(IDisplay):
             Table: A Rich Table with one row per hand, containing EV columns and best action.
         """
         tbl = self._build_table("EXPECTED VALUE INFORMATION", self.EV_COLUMNS)
-        for hand, res in self._evals.items():
+        for hid, res in self._evals.items():
+            display_id = f"Player {hid}"
             evs = res.get("evs", {})
             best = res.get("best_action", "")
 
@@ -194,7 +200,7 @@ class HybridDisplay(IDisplay):
                 return f"[{col}]{v:.2f}[/{col}]"
 
             tbl.add_row(
-                hand,
+                display_id,
                 fmt("stand"),
                 fmt("hit"),
                 fmt("double"),

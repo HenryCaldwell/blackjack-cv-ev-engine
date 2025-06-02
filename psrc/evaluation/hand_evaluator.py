@@ -28,7 +28,7 @@ class HandEvaluator(IHandEvaluator):
 
     def evaluate_hands(
         self, hands: Dict[str, Dict[str, Any]]
-    ) -> Dict[str, Dict[str, Any]]:
+    ) -> Dict[int, Dict[str, Any]]:
         """
         Evaluate each player's hand and select the optimal action.
 
@@ -40,9 +40,9 @@ class HandEvaluator(IHandEvaluator):
             hands (Dict[str, Dict[str, Any]]): A mapping of hand IDs to their hand information.
 
         Returns:
-            Dict[str, Dict[str, Any]]: A mapping of hand IDs to their evaluation information.
+            Dict[int, Dict[str, Any]]: A mapping of hand IDs to their evaluation information.
 
-            - Key (str): A hand ID, as "Player {n}".
+            - Key (int): A unique ID for each hand.
             - Value (Dict[str, Any]): A dict of evaluation information.
                 - "evs" (Dict[str, float]): A dict of expected value information.
                     - "stand" (float): The expected value for standing.
@@ -53,14 +53,14 @@ class HandEvaluator(IHandEvaluator):
                 - "best_action" (str): The action with the highest expected value.
         """
         results: Dict[str, Any] = {}
-        dealer_cards = hands.get("Dealer", {}).get("cards", [])
+        dealer_cards = hands.get(0, {}).get("cards", [])
 
         if not dealer_cards:
             return {}
 
         # Compute EVs for each player hand, skipping over the dealer
         for hand_id, info in hands.items():
-            if hand_id == "Dealer":
+            if hand_id == 0:
                 continue
 
             player_cards = info.get("cards", [])
