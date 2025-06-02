@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, Union
 
 import os
 import yaml
@@ -10,13 +10,10 @@ class ConfigManager:
     """
 
     yolo_path: str
-    video_path: str
-
     ev_jar_path: str
     ev_class_path: str
 
-    use_webcam: bool
-    webcam_index: int
+    video_source: Union[int, str]
 
     inference_interval: float
 
@@ -30,6 +27,7 @@ class ConfigManager:
     inference_frame_size: Tuple[int, int]
     annotation_frame_size: Tuple[int, int]
     window_frame_size: Tuple[int, int]
+    window_name: str
 
     deck_count: int
 
@@ -54,14 +52,11 @@ class ConfigManager:
 
         settings = config_data["analysis_settings"]
 
-        self.yolo_path = settings["yolo_path"]
-        self.video_path = settings["video_path"]
+        self.video_source = settings["video_source"]
 
+        self.yolo_path = settings["yolo_path"]
         self.ev_jar_path = settings["ev_jar_path"]
         self.ev_class_path = settings["ev_class_path"]
-
-        self.use_webcam = settings["use_webcam"]
-        self.webcam_index = settings["webcam_index"]
 
         self.inference_interval = settings["inference_interval"]
 
@@ -75,7 +70,6 @@ class ConfigManager:
         self.inference_frame_size = tuple(settings["inference_frame_size"])
         self.annotation_frame_size = tuple(settings["annotation_frame_size"])
         self.window_frame_size = tuple(settings["window_frame_size"])
-
         self.window_name = settings["window_name"]
 
         self.deck_count = settings["deck_count"]

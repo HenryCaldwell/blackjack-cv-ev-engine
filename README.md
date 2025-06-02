@@ -66,7 +66,7 @@ mvn clean package
 
 - Edit `config.yaml` at the project root to set:
   - Paths to the YOLO weights and video source.
-  - Java EV calculator JAR and class paths.
+  - Java expected value calculator JAR and class paths.
   - Any thresholds, frame sizes, or blackjack rules as needed.
 
 ## Usage
@@ -89,7 +89,7 @@ python main.py
 3. **Troubleshooting:**
 
 - JPype "JVM not found" errors: Ensure JAVA_HOME points to a Java 11+ installation.
-- "Unable to open video source": Verify video_path in config.yaml, or set use_webcam: true with the correct webcam_index.
+- "Unable to open video source": Verify video_source in config.yaml references a valid webcam index or video path.
 - YOLO model loading issues: Confirm yolo_path references a valid Ultralytics-compatible .pt file.
 - Python dependency conflicts: Make sure the virtual environment is activated before running pip install -r requirements.txt.
 
@@ -99,7 +99,7 @@ python main.py
 .
 ├── config.yaml                     # Stores all analysis, detection, display, and blackjack settings.
 ├── main.py                         # Initializes components and starts the evaluation engine.
-├── pom.xml                         # Configures Maven to compile and package the Java EV calculator.
+├── pom.xml                         # Configures Maven to compile and package the Java expected value calculator.
 ├── requirements.txt                # Lists the Python dependencies for the project.
 ├── jsrc
 │  └── evaluation
@@ -108,7 +108,7 @@ python main.py
 │     └── StateKey.java             # Represents a game state for EV caching.
 ├── psrc
 │  ├── annotation
-│  │  └── cv_annotator.py           # Draws bounding boxes and labels on frames.
+│  │  └── mpl_annotator.py          # Draws bounding boxes and labels on frames.
 │  ├── config
 │  │  └── config_manager.py         # Loads analysis settings.
 │  ├── core
@@ -133,7 +133,7 @@ python main.py
 │  │  └── hybrid_display.py         # Shows annotated video and related tables side by side.
 │  ├── evaluation
 │  │  ├── card_deck.py              # Manages counts for a multi-deck blackjack deck.
-│  │  ├── ev_calculator_wrapper.py  # Wraps the Java EV calculator via JPype.
+│  │  ├── ev_calculator_wrapper.py  # Wraps the Java expected value calculator via JPype.
 │  │  └── hand_evaluator.py         # Chooses the best blackjack action based on EVs.
 │  └── input
 │     └── cv_video_stream.py        # Reads frames from a video file or webcam.

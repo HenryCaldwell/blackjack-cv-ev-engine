@@ -1,4 +1,4 @@
-from typing import Any, Union
+from typing import Any, Tuple, Union
 
 import cv2
 
@@ -13,21 +13,30 @@ class CVVideoStream(IFrameReader):
     source’s FPS, and release resources.
     """
 
-    def __init__(self, source: Union[int, str] = 0) -> None:
+    def __init__(
+        self,
+        video_source: Union[int, str] = 0,
+        inference_frame_size: Tuple[int, int] = (1920, 1080),
+    ) -> None:
         """
-        Initialize CVVideoStream with the given source.
+        Initialize CVVideoStream with the given source and inference frame size.
 
         Parameters:
             source (Union[int, str]): The video source to open. This can be a file path or integer.
+            inference_frame_size (Tuple[int, int]): The resolution for inference processing.
 
         Raises:
             IOError: If the video source cannot be opened.
         """
         # Open the video stream using OpenCV VideoCapture with the specified source
-        self.stream = cv2.VideoCapture(source)
+        self.stream = cv2.VideoCapture(video_source)
 
         if not self.stream.isOpened():
-            raise IOError(f"Unable to open video source: {source}")
+            raise IOError(f"Unable to open video source: {video_source}")
+
+        width, height = inference_frame_size
+        self.stream.set(cv2.CAP_PROP_FRAME_WIDTH, width)
+        self.stream.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
 
     def read_frame(self) -> Any:
         """

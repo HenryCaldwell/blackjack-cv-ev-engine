@@ -29,14 +29,16 @@ def main() -> None:
     settings = ConfigManager()
 
     # Core Components
-    source = settings.webcam_index if settings.use_webcam else settings.video_path
-    video_reader = CVVideoStream(source=source)
+    video_reader = CVVideoStream(
+        video_source=settings.video_source,
+        inference_frame_size=tuple(settings.inference_frame_size),
+    )
 
     card_detector = CardDetector(model_path=settings.yolo_path)
 
     deck = CardDeck(settings.deck_count)
 
-    tracker = CardTracker(
+    card_tracker = CardTracker(
         confidence_threshold=settings.confidence_threshold,
         iou_threshold=settings.iou_threshold,
         confirmation_frames=settings.confirmation_frames,
@@ -63,7 +65,7 @@ def main() -> None:
     engine = AnalysisEngine(
         video_reader=video_reader,
         card_detector=card_detector,
-        card_tracker=tracker,
+        card_tracker=card_tracker,
         hand_tracker=hand_tracker,
         deck=deck,
         hand_evaluator=hand_evaluator,
