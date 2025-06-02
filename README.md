@@ -4,20 +4,6 @@
 
 A real-time computer vision system for evaluating optimal blackjack decisions. This application uses YOLO for card detection, a custom tracking and hand grouping pipeline, and a Java-based expected value calculator to evaluate stand, hit, double, split, or surrender actions. Results are displayed as an annotated video alongside a Rich-powered dashboard of hand info, expected values, and deck composition.
 
-## Table of Contents
-
-- [Project Description](#project-description)
-  - [Key Features](#key-features)
-- [Installation and Setup](#installation-and-setup)
-  - [Prerequisites](#prerequisites)
-  - [Setup Steps](#setup-steps)
-- [Usage](#usage)
-  - [Run the Application](#run-the-application)
-  - [Terminate the Program](#terminate-the-program)
-  - [Troubleshooting](#troubleshooting)
-- [File Structure](#file-structure)
-- [License](#license)
-
 **Key Features:**
 
 - **Card Detection:** Utilizes an Ultralytics YOLO model to detect playing cards in each video frame with high accuracy and low latency.
