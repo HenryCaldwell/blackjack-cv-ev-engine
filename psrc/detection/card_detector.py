@@ -35,6 +35,13 @@ class CardDetector(ICardDetector):
 
         Returns:
             Dict[Tuple, Dict[str, Any]]: A mapping of bounding box coordinates to their detection information.
+
+            - Key (Tuple[float, float, float, float]): A tuple representing the bounding box.
+                - (x1, y1) = top-left corner
+                - (x2, y2) = bottom-right corner
+            - Value (Dict[str, Any]): A dict of detection information.
+                - "label" (Optional[int]): Class index assigned by YOLO for this box, or None.
+                - "confidence" (float): Confidence score for this detection.
         """
         # Run the YOLO model on the frame
         results = self.model(frame, show=False)

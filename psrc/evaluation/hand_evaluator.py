@@ -41,6 +41,16 @@ class HandEvaluator(IHandEvaluator):
 
         Returns:
             Dict[str, Dict[str, Any]]: A mapping of hand IDs to their evaluation information.
+
+            - Key (str): A hand ID, as "Player {n}".
+            - Value (Dict[str, Any]): A dict of evaluation information.
+                - "evs" (Dict[str, float]): A dict of expected value information.
+                    - "stand" (float): The expected value for standing.
+                    - "hit" (float): The expected value for hitting.
+                    - "double" (float): The expected value for doubling.
+                    - "split" (float): The expected value for splitting.
+                    - "surrender" (float): The expected value for surrendering.
+                - "best_action" (str): The action with the highest expected value.
         """
         results: Dict[str, Any] = {}
         dealer_cards = hands.get("Dealer", {}).get("cards", [])

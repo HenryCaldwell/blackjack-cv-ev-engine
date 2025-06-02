@@ -279,6 +279,12 @@ class CardTracker(ICardTracker):
 
         Returns:
             Dict[int, Dict[str, Any]]: A mapping of track IDs to their tracking information.
+
+            - Key (int): A unique ID for each track.
+            - Value (Dict[str, Any]): A dict of tracking information.
+                - "bbox" (Tuple[float, float, float, float]): The current bounding box for this track.
+                - "label" (Any): The label associated with the detection that created or updated this track.
+                - "state" (int): The current track state.
         """
         detection_boxes = [list(bbox) for bbox in detections.keys()]
         assignments, unmatched_detections = self._data_association(detection_boxes)

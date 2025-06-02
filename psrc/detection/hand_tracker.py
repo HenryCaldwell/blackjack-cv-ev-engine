@@ -179,6 +179,13 @@ class HandTracker(IHandTracker):
 
         Returns:
             Dict[str, Dict[str, Any]]: A mapping of hand IDs to their hand information.
+
+            - Key (str): A hand ID, either "Dealer" or "Player {n}".
+            - Value (Dict[str, Any]): A dict of hand information.
+                - "cards" (List[int]): The list of card labels in the hand.
+                - "score" (int): The computed blackjack score of the hand.
+                - "boxes" (List[Tuple[float, float, float, float]]): The list of bounding boxes for cards
+                  in the hand.
         """
         # Retrieve only the confirmed cards from the tracked cards
         stable_tracks = {
