@@ -4,56 +4,53 @@ analysis_settings:
   # ------------------------------------------------------------
 
   # Video Input Parameters
-  video_source: 0 # Webcam index or video file path
+  video_source: 0 # Index of webcam (integer) or path to video file (string)
 
   # File Path Parameters
-  yolo_path: "resources/detection_weights.pt" # Path to the YOLO model weights
-  ev_jar_path: "target/blackjack-ev-calculator-1.0.0.jar" # Path to the Java Archive (JAR) for the EV calculator
-  ev_class_path: "evaluation.EVCalculator" # Fully qualified Java class name for the EV calculator
+  yolo_path: "resources/detection_weights.pt" # Path to the YOLO weights file used for card detection
+  ev_jar_path: "target/blackjack-ev-calculator-1.0.0.jar" # Path to the compiled JAR containing the EVCalculator class
+  ev_class_path: "evaluation.EVCalculator" # Fully qualified Java class name for the expected value calculator
 
   # Inference Parameters
-  inference_interval: 0.1 # Seconds between inference updates
+  inference_interval: 0.1 # Minimum time between consecutive inference passes
 
   # Detection & Grouping Parameters
-  overlap_threshold: 0.1 # For grouping cards into hands
-  iou_threshold: 0.1 # For card tracking hungarian
-  confidence_threshold: 0.9 # Minimum confidence required for tarcking --- CURRENTLY UNUSED ---
+  overlap_threshold: 0.1 # Minimum overlap ratio required to group cards into the same hand
+  iou_threshold: 0.1 # Intersection-over-Union threshold for associating detections to existing tracks
+  confidence_threshold: 0.9 # Minimum detection confidence required to consider a detection valid --- CURRENTLY UNUSED ---
 
   # Stability Tracking Parameters
-  confirmation_frames: 20 # Frames needed to confirm a detection
-  removal_frames: 30 # Frames after which a card is dropped from tracking
+  confirmation_frames: 20 # Number of consecutive hits before a new detection is marked as a confirmed track
+  removal_frames: 30 # Number of consecutive misses before a confirmed track is deleted
 
   # ------------------------------------------------------------
   # RESOLUTION SETTINGS
   # ------------------------------------------------------------
 
-  inference_frame_size: [1920, 1080] # Frame resolution for inference
-  annotation_frame_size: [1280, 720] # Frame resolution for annotation
-  window_frame_size: [1280, 720] # Frame resolution for window
+  inference_frame_size: [1920, 1080] # Width and height (pixels) at which frames are resized for inference
+  annotation_frame_size: [1280, 720] # Width and height (pixels) at which frames are resized for annotation/display
+  window_frame_size: [1280, 720] # Width and height (pixels) of the application window
 
   # ------------------------------------------------------------
   # DISPLAY SETTINGS
   # ------------------------------------------------------------
 
-  window_name: "Blackjack CV EV Engine" # Name of the window
+  window_name: "Blackjack CV EV Engine" # Title of the OpenCV window for the annotated display
 
   # ------------------------------------------------------------
   # BLACKJACK LOGIC SETTINGS
   # ------------------------------------------------------------
 
   # Deck and Payout Settings
-  deck_count: 1 # Number of decks in play
-  blackjack_odds: 1.5 # Payout multiplier for natural blackjack
-
-  # Player Settings
-  can_surrender: true # Whether surrender is allowed --- CURRENTLY UNUSED ---
+  deck_count: 1 # Number of standard 52-card decks combined into the shoe
+  blackjack_odds: 1.5 # Payout multiplier for a natural blackjack
 
   # Dealer Settings
-  dealer_hits_on_soft_17: true # If dealer hits on soft 17
-  dealer_peaks_for_21: true # If dealer peeks for blackjack
+  dealer_hits_on_soft_17: true # If true, dealer draws on a soft 17 rather than standing
+  dealer_peaks_for_21: true # If true, dealer checks for blackjack when showing an Ace or ten-value card
 
   # Splitting and Doubling Settings
-  natural_blackjack_splits: false # If a split natural counts as blackjack
-  double_after_split: true # Whether doubling down is allowed after splitting
-  hit_split_aces: false # If hit is allowed after splitting aces
-  double_split_aces: false # If doubling after splitting aces is allowed
+  natural_blackjack_splits: false # If true, a split hand that is a natural counts as a blackjack
+  double_after_split: true # If true, players may double down on hands after splitting
+  hit_split_aces: false # If true, players may double down on hands after splitting
+  double_split_aces: false # If true, players may double down on split Aces
