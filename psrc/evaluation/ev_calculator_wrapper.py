@@ -16,17 +16,17 @@ class EVCalculatorWrapper(IExpectedValueCalculator):
     def __init__(
         self,
         jar_path: str = "target/blackjack-ev-calculator-1.0.0.jar",
-        java_class: str = "evaluation.EVCalculator",
+        class_path: str = "evaluation.EVCalculator",
     ) -> None:
         """
         Initialize EVCalculatorWrapper by launching the JVM and instantiating the Java calculator.
 
         Parameters:
             jar_path (str): The path to the EV calculator JAR.
-            java_class (str): The fully qualified Java class name.
+            class_path (str): The fully qualified Java class name.
         """
         self.jar_path = jar_path
-        self.java_class = java_class
+        self.class_path = class_path
         # Start the JVM and initialize the Java EV calculator
         self._start_jvm()
 
@@ -42,7 +42,7 @@ class EVCalculatorWrapper(IExpectedValueCalculator):
             jpype.startJVM(classpath=[self.jar_path])
 
         # Load the EVCalculator Java class and create an instance
-        self._java_ev_cls = jpype.JClass(self.java_class)
+        self._java_ev_cls = jpype.JClass(self.class_path)
         self._java_ev = self._java_ev_cls()
 
     def _deck_to_java_array(self, deck: Dict[int, int]) -> Any:

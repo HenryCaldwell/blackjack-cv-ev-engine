@@ -50,7 +50,7 @@ def main() -> None:
 
     ev_calculator = EVCalculatorWrapper(
         jar_path=settings.ev_jar_path,
-        java_class=settings.ev_class_path,
+        class_path=settings.ev_class_path,
     )
 
     hand_evaluator = HandEvaluator(deck=deck, ev_calculator=ev_calculator)
