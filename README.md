@@ -1,5 +1,7 @@
 # Blackjack Computer Vision Evaluation Engine
 
+## [LIVE DEMO](https://www.youtube.com/watch?v=opMLxb1acOM)
+
 ## Project Description
 
 A real-time computer vision system for evaluating optimal blackjack decisions. This application uses YOLO for card detection, a custom tracking and hand grouping pipeline, and a Java-based expected value calculator to evaluate stand, hit, double, split, or surrender actions. Results are displayed as an annotated video alongside a Rich-powered dashboard of hand info, expected values, and deck composition.
