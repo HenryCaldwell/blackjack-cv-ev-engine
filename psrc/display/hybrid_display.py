@@ -152,8 +152,10 @@ class HybridDisplay(IDisplay):
             Table: A Rich Table ready for rows.
         """
         tbl = Table(title=title, title_justify="center")
+
         for header, justify, width in columns:
             tbl.add_column(header, justify=justify, min_width=width)
+
         return tbl
 
     def _make_hand_table(self) -> Table:
@@ -164,6 +166,7 @@ class HybridDisplay(IDisplay):
             Table: A Rich Table with one row per hand, showing ID, cards, and colored score.
         """
         tbl = self._build_table("HAND INFORMATION", self.HAND_COLUMNS)
+
         for hid, info in self._hands.items():
             if hid == 0:
                 display_id = "Dealer"
@@ -179,6 +182,7 @@ class HybridDisplay(IDisplay):
             color = "green" if score <= 21 else "red"
             score_str = f"[{color}]{score}[/{color}]"
             tbl.add_row(display_id, display_cards, score_str)
+
         return tbl
 
     def _make_ev_table(self) -> Table:
@@ -189,6 +193,7 @@ class HybridDisplay(IDisplay):
             Table: A Rich Table with one row per hand, containing EV columns and best action.
         """
         tbl = self._build_table("EXPECTED VALUE INFORMATION", self.EV_COLUMNS)
+
         for hid, res in self._evals.items():
             display_id = f"Player {hid}"
             evs = res.get("evs", {})
@@ -208,6 +213,7 @@ class HybridDisplay(IDisplay):
                 fmt("surrender"),
                 f"[bold yellow]{best}[/bold yellow]",
             )
+
         return tbl
 
     def _make_deck_table(self) -> Table:
@@ -218,9 +224,11 @@ class HybridDisplay(IDisplay):
             Table: A Rich Table listing each card label and its remaining count.
         """
         tbl = self._build_table("DECK COMPOSITION", self.DECK_COLUMNS)
+
         for label in sorted(self._deck.keys()):
             display = "A" if label == 0 else str(label + 1)
             tbl.add_row(display, str(self._deck[label]))
+
         return tbl
 
     def start(self) -> None:
@@ -234,6 +242,7 @@ class HybridDisplay(IDisplay):
             None
         """
         prev_hands, prev_evals, prev_deck = None, None, None
+
         with Live(console=self.console, screen=False, auto_refresh=True) as live:
             while True:
                 with self._lock:
