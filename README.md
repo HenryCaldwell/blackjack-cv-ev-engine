@@ -124,7 +124,7 @@ python main.py
 │  │  ├── ev_calculator_wrapper.py  # Wraps the Java expected value calculator via JPype.
 │  │  └── hand_evaluator.py         # Chooses the best blackjack action based on EVs.
 │  └── input
-│     └── cv_video_stream.py        # Reads frames from a video file or webcam.
+│     └── ocv_video_stream.py       # Reads frames from a video file or webcam.
 ```
 
 ## License

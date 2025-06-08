@@ -8,7 +8,7 @@ from psrc.detection.card_detector import CardDetector
 from psrc.detection.card_tracker import CardTracker
 from psrc.config.config_manager import ConfigManager
 from psrc.annotation.mpl_annotator import MPLAnnotator
-from psrc.input.cv_video_stream import CVVideoStream
+from psrc.input.ocv_video_stream import OCVVideoStream
 from psrc.evaluation.ev_calculator_wrapper import EVCalculatorWrapper
 from psrc.evaluation.hand_evaluator import HandEvaluator
 from psrc.detection.hand_tracker import HandTracker
@@ -29,7 +29,7 @@ def main() -> None:
     settings = ConfigManager()
 
     # Core Components
-    video_reader = CVVideoStream(
+    video_reader = OCVVideoStream(
         video_source=settings.video_source,
         inference_frame_size=tuple(settings.inference_frame_size),
     )

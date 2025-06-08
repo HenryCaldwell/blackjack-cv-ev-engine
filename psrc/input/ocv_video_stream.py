@@ -5,9 +5,9 @@ import cv2
 from psrc.core.interfaces.i_frame_reader import IFrameReader
 
 
-class CVVideoStream(IFrameReader):
+class OCVVideoStream(IFrameReader):
     """
-    CVVideoStream is an implementation of the IFrameReader interface.
+    OCVVideoStream is an implementation of the IFrameReader interface.
 
     This implementation uses OpenCV’s VideoCapture to open a video source, read frames on demand, report the
     source’s FPS, and release resources.
@@ -19,7 +19,7 @@ class CVVideoStream(IFrameReader):
         inference_frame_size: Tuple[int, int] = (1920, 1080),
     ) -> None:
         """
-        Initialize CVVideoStream with the given source and inference frame size.
+        Initialize OCVVideoStream with the given source and inference frame size.
 
         Parameters:
             source (Union[int, str]): The video source to open. This can be a file path or integer.
